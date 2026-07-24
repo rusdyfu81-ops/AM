@@ -45,30 +45,28 @@ a{color:inherit}
 .viewtog button{flex:1;background:transparent;border:0;color:rgba(241,238,229,.55);font-family:var(--mono);
  font-size:10.5px;letter-spacing:.08em;padding:7px;cursor:pointer}
 .viewtog button.on{background:var(--signal);color:var(--ink);font-weight:700}
-.plan{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;background:var(--ink-2);padding:8px;border-radius:4px}
-.unit{border:0;border-radius:2px;cursor:pointer;background:var(--paper);color:var(--ink);font-family:var(--mono);
- display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;text-align:left;min-height:54px;
- position:relative;overflow:hidden;transition:box-shadow .16s,transform .16s}
-.unit:hover{transform:translateY(-2px);box-shadow:0 4px 0 rgba(233,180,41,.9)}
-.unit:focus-visible{outline:2px solid var(--signal);outline-offset:2px}
-.unit .code{font-size:9.5px;font-weight:700;letter-spacing:.05em;opacity:.5}
-.unit .nm{font-family:var(--sans);font-size:10.5px;line-height:1.2;font-weight:600;overflow:hidden;
- display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.unit.vacant{background:var(--ink-3);color:rgba(241,238,229,.4);border:1px dashed rgba(241,238,229,.18)}
-.unit.vacant .nm{font-weight:400;font-style:italic}
-.unit.sel{box-shadow:0 0 0 2px var(--signal),0 4px 0 rgba(233,180,41,.9)}
-.unit .cat-bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--sea)}
-.unit.fnb .cat-bar{background:var(--signal)}
-.unit.jasa .cat-bar{background:#7C6BD6}
-.unit.vacant .cat-bar{display:none}
-.fixture{border-radius:2px;border:1px dashed rgba(241,238,229,.2);color:rgba(241,238,229,.42);font-family:var(--mono);
- font-size:9.5px;letter-spacing:.1em;display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}
-.corridor{grid-column:1/-1;height:16px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);
- font-size:8.5px;letter-spacing:.35em;color:rgba(241,238,229,.22)}
-@keyframes flash{0%,100%{box-shadow:0 0 0 2px var(--signal)}50%{box-shadow:0 0 0 7px rgba(233,180,41,.9)}}
-.unit.flash{animation:flash .5s ease-in-out 4;z-index:3;background:var(--signal)!important;color:var(--ink)!important}
-.unit.flash .code{opacity:.75}
-@media(prefers-reduced-motion:reduce){.unit.flash{animation:none;box-shadow:0 0 0 4px var(--signal)}}
+/* ---------- denah SVG ---------- */
+.plan-svg{width:100%;height:auto;display:block;background:var(--ink-2);border-radius:4px;max-height:78vh}
+.plan-svg .u{cursor:pointer;stroke:var(--ink-2);stroke-width:1.2;transition:opacity .18s}
+.plan-svg .u.fnb{fill:#E9B429}
+.plan-svg .u.ritel{fill:#2F8F82}
+.plan-svg .u.jasa{fill:#7C6BD6}
+.plan-svg .u.vacant{fill:#173F45;stroke:rgba(241,238,229,.28);stroke-dasharray:3 3}
+.plan-svg .u.dim{opacity:.16;pointer-events:none}
+.plan-svg .u:hover{stroke:var(--paper);stroke-width:2.4}
+.plan-svg .u.sel{stroke:var(--paper);stroke-width:2.8}
+.plan-svg .u.flash{fill:#FFD866;stroke:var(--paper);stroke-width:3.4;animation:svgflash .5s ease-in-out 4}
+@keyframes svgflash{0%,100%{opacity:1}50%{opacity:.45}}
+@media(prefers-reduced-motion:reduce){.plan-svg .u.flash{animation:none}}
+.plan-svg .fx{fill:rgba(241,238,229,.05);stroke:rgba(241,238,229,.22);stroke-dasharray:4 4}
+.plan-svg .fxt{fill:rgba(241,238,229,.45);font-family:var(--mono);letter-spacing:.12em;pointer-events:none}
+.plan-svg .ut{fill:var(--ink);font-family:var(--mono);font-weight:700;pointer-events:none}
+.plan-svg .u.vacant+.ut,.plan-svg .vacant~.ut{fill:var(--paper)}
+.zonebar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.zonebar button{background:transparent;border:1px solid rgba(241,238,229,.2);border-radius:3px;
+ color:rgba(241,238,229,.6);font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;padding:6px 9px;cursor:pointer;white-space:nowrap}
+.zonebar button:hover{border-color:rgba(241,238,229,.5);color:var(--paper)}
+.zonebar button.on{background:var(--signal);color:var(--ink);border-color:var(--signal);font-weight:700}
 #planList{display:none;flex-direction:column;gap:3px}
 #planList button{display:flex;gap:10px;align-items:center;background:var(--ink-2);border:0;border-left:3px solid var(--sea);
  border-radius:3px;padding:10px 11px;text-align:left;cursor:pointer;font-family:inherit;color:var(--paper);width:100%}
@@ -291,11 +289,8 @@ h2.detail-name{font-size:25px;line-height:1.1;margin-bottom:6px}
   .btn{padding:13px 14px}
   .tbtn{padding:11px 14px}
   .proof button{padding:14px 10px}
-  .plan{gap:3px;padding:6px}
-  .unit{min-height:46px;align-items:center;justify-content:center;padding:4px}
-  .unit .nm{display:none}
-  .unit .code{font-size:12.5px;font-weight:700;letter-spacing:0;opacity:1}
-  .unit.vacant .code{opacity:.45}
+  .plan-svg{max-height:58vh}
+  .zonebar button{font-size:10.5px;padding:8px 10px}
   .qcard{padding:15px;gap:14px}
   .qrhold{width:92px;padding:6px}
   .qrinfo{min-width:0;flex:1 1 100%}

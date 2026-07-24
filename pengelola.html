@@ -60,9 +60,10 @@ function render(){
     <div class="stat"><b>${tercatat}</b><span>TERCATAT AKTIF DI SISTEM</span></div>
     <div class="stat"><b>${adaToko}</b><span>TERBUKTI ADA TOKO DI LAPANGAN</span></div>
     <div class="stat"><b>${hard.length}</b><span>BARIS SELISIH</span></div>`;
-  document.getElementById('recon').innerHTML=`Dari ${tercatat} unit yang tercatat aktif, ${tercatat-1} terbukti ada tokonya dan 1 unit ternyata kosong.
-    Di luar itu ada 3 unit yang ada tokonya tetapi tidak tercatat sama sekali. Ditambah 1 unit yang nama usahanya tidak cocok dengan kontrak,
-    seluruhnya menjadi ${hard.length} baris selisih.`;
+  const byKat={};hard.forEach(i=>{const k=CASES[i].kat;byKat[k]=(byKat[k]||0)+1});
+  document.getElementById('recon').innerHTML='Rincian '+hard.length+' baris selisih: '+
+    Object.entries(byKat).map(([k,v])=>`<b>${v}</b> ${k.toLowerCase()}`).join(' · ')+
+    `. Ditambah ${soft.length} catatan bersinyal tunggal yang belum cukup untuk disimpulkan.`;
 
   const row=id=>{const c=CASES[id],e=EVIDENCE[id],sc=score(id);
     return `<div class="row ${done[id]?'done':''}">

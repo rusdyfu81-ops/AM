@@ -38,8 +38,41 @@ const TOG=[
  ['fRekonsiliasi','Panel rekonsiliasi pengelola','Halaman selisih data okupansi. Matikan kalau belum ingin ditampilkan ke siapa pun.'],
 ];
 
+function rows(list){
+  return list.map(u=>{
+    const punya=u.sis==='aktif';
+    return `<tr class="${u.nonaktif?'off':''}">
+      <td class="u">${u.u.replace('L3-','')}</td>
+      <td>${esc(u.n||u.papan||'—')}</td>
+      <td><span class="pill ${punya?'ok':'no'}">${punya?'AKTIF':u.sis.toUpperCase()}</span></td>
+      <td>${punya?`<span class="pill ${u.qr==='aktif'?'ok':'warn'}">${u.qr==='aktif'?'AKTIF':'BELUM'}</span>`:'<span class="pill">—</span>'}</td>
+      <td><span class="pill ${u.nonaktif?'no':'ok'}">${u.nonaktif?'DISEMBUNYIKAN':'TAMPIL'}</span></td>
+      <td style="white-space:nowrap">${punya?`<button class="mini" data-qr="${u.u}">${u.qr==='aktif'?'QR baru':'Lihat QR'}</button>
+      <button class="mini ${u.nonaktif?'':'d'}" data-off="${u.u}">${u.nonaktif?'Tampilkan':'Sembunyikan'}</button>`:'—'}</td></tr>`}).join('');
+}
+function bindRows(){
+  document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{
+    const u=unit(b.dataset.off);patchUnit(u.u,x=>x.nonaktif=!x.nonaktif);filterRows();
+    toast(u.nonaktif?`${u.u} kembali tampil di direktori.`:`${u.u} disembunyikan dari direktori.`)});
+  document.querySelectorAll('[data-qr]').forEach(b=>b.onclick=()=>{
+    const code=b.dataset.qr,u=unit(code);
+    if(u.qr==='aktif'&&confirm('Terbitkan QR baru untuk '+code+'? QR lama langsung tidak berlaku.')){
+      patchUnit(code,x=>{x.qr='belum';x.scan=0});filterRows()}
+    showQR(code)});
+}
+function filterRows(){
+  const f=(document.getElementById('kf').value||'').trim().toLowerCase();
+  const z=document.getElementById('kz').value;
+  const all=units().filter(u=>(!z||u.z===z)&&(!f||u.u.toLowerCase().indexOf(f)>-1||
+    (u.n||'').toLowerCase().indexOf(f)>-1||(u.papan||'').toLowerCase().indexOf(f)>-1));
+  const show=all.slice(0,80);
+  document.getElementById('kbody').innerHTML=rows(show);
+  document.getElementById('kcount').textContent=
+    `Menampilkan ${show.length} dari ${all.length} unit${all.length>show.length?' — persempit dengan pencarian atau zona.':'.'}`;
+  bindRows();
+}
 function render(){
-  const c=cfg(),U=units();
+  const c=cfg(),U=units().slice(0,80);
   main.innerHTML=`
   <h1 style="font-size:24px;margin-bottom:6px">Konfigurasi sistem</h1>
   <p class="admin-sub">Perubahan langsung berlaku di halaman pengunjung, portal tenant, dan panel pengelola.</p>
@@ -66,22 +99,17 @@ function render(){
       ini plafon, bukan perkiraan pemakaian. Hadiah laporan dibayar terpisah dan hanya setelah diverifikasi.</p>
   </div>
 
-  <div class="card"><div class="card-lbl">KIOS, QR, DAN STATUS TAMPIL</div>
+  <div class="card"><div class="card-lbl">KIOS, QR, DAN STATUS TAMPIL — 200 UNIT</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <input id="kf" placeholder="Cari nomor kios atau nama toko…" style="flex:1 1 220px;padding:9px 10px;border:1px solid var(--line);border-radius:3px;font-family:inherit;font-size:14px">
+      <select id="kz" style="padding:9px 10px;border:1px solid var(--line);border-radius:3px;font-family:inherit;font-size:14px">
+        <option value="">Semua zona</option>${Object.keys(ZONES).map(z=>`<option value="${z}">${z} · ${ZONES[z]}</option>`).join('')}
+      </select></div>
     <div class="tblwrap"><table class="ktab">
       <thead><tr><th>UNIT</th><th>NAMA</th><th>KONTRAK</th><th>QR</th><th>TAMPIL</th><th>TINDAKAN</th></tr></thead>
-      <tbody>${U.map(u=>{
-        const punyaKontrak=u.sis==='aktif';
-        return `<tr class="${u.nonaktif?'off':''}">
-        <td class="u">${u.u}</td>
-        <td>${esc(u.n||'—')}</td>
-        <td><span class="pill ${punyaKontrak?'ok':'no'}">${punyaKontrak?'AKTIF':u.sis.toUpperCase()}</span></td>
-        <td>${punyaKontrak?`<span class="pill ${u.qr==='aktif'?'ok':'warn'}">${u.qr==='aktif'?'AKTIF':'BELUM'}</span>`:'<span class="pill">—</span>'}</td>
-        <td><span class="pill ${u.nonaktif?'no':'ok'}">${u.nonaktif?'DISEMBUNYIKAN':'TAMPIL'}</span></td>
-        <td style="white-space:nowrap">
-          ${punyaKontrak?`<button class="mini" data-qr="${u.u}">${u.qr==='aktif'?'Terbitkan QR baru':'Lihat QR klaim'}</button>
-          <button class="mini ${u.nonaktif?'':'d'}" data-off="${u.u}">${u.nonaktif?'Tampilkan':'Sembunyikan'}</button>`:'—'}
-        </td></tr>`}).join('')}</tbody>
+      <tbody id="kbody">${rows(U)}</tbody>
     </table></div>
+    <p class="empty-note" id="kcount" style="font-size:12px;margin-top:8px"></p>
     <p class="empty-note" style="font-size:12.5px;margin-top:12px">
       <b>Terbitkan QR baru</b> mematikan QR lama dan mengembalikan kios ke tahap aktivasi — dipakai kalau tenant ganti nomor HP atau QR hilang.
       <b>Sembunyikan</b> menghapus toko dari direktori tanpa menghapus datanya. Perhatikan: menyembunyikan toko yang sedang bermasalah membuat pemiliknya langsung tahu ada yang mengamati.</p>
@@ -116,14 +144,9 @@ function render(){
     location.reload()};
   $('wipe').onclick=()=>{if(confirm('Kembalikan seluruh data peragaan ke kondisi awal?')){resetAll();location.reload()}};
 
-  document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{
-    const u=unit(b.dataset.off);patchUnit(u.u,x=>x.nonaktif=!x.nonaktif);render();
-    toast(u.nonaktif?`${u.u} kembali tampil di direktori.`:`${u.u} disembunyikan dari direktori.`)});
-  document.querySelectorAll('[data-qr]').forEach(b=>b.onclick=()=>{
-    const code=b.dataset.qr,u=unit(code);
-    if(u.qr==='aktif'&&confirm('Terbitkan QR baru untuk '+code+'? QR lama langsung tidak berlaku.')){
-      patchUnit(code,x=>{x.qr='belum';x.scan=0});render()}
-    showQR(code)});
+  document.getElementById('kf').oninput=filterRows;
+  document.getElementById('kz').onchange=filterRows;
+  filterRows();
 }
 
 function showQR(code){

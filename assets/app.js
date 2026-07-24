@@ -4,7 +4,7 @@
    memori (halaman tetap jalan, hanya tidak tersimpan antar halaman).
    ============================================================ */
 const DB={
-  ns:'msj_v1',
+  ns:'msj_v2',
   mem:{},
   ok:(function(){try{localStorage.setItem('_t','1');localStorage.removeItem('_t');return true}catch(e){return false}})(),
   get(k,d){try{if(!this.ok)return (k in this.mem)?this.mem[k]:d;
@@ -33,10 +33,11 @@ function resetAll(){DB.wipe()}
 const isLive=u=>u.sis==='aktif'&&!u.nonaktif;
 const RANK={sorotan:0,aktif:1,dasar:2};
 const rp=n=>'Rp '+Number(n).toLocaleString('id-ID');
-const jt=n=>'Rp '+(n/1e6).toLocaleString('id-ID',{maximumFractionDigits:0})+' juta';
+const jt=n=>{const m=n/1e6;return m>=1000?'Rp '+(m/1000).toLocaleString('id-ID',{maximumFractionDigits:2})+' miliar'
+  :'Rp '+m.toLocaleString('id-ID',{maximumFractionDigits:0})+' juta'};
 const qs=k=>new URLSearchParams(location.search).get(k);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function baseURL(){return location.href.replace(/[^/]*$/,'')}
+function baseURL(){return location.href.replace(/[?#].*$/,'').replace(/[^/]*$/,'')}
 
 let _tt;
 function toast(m){let e=document.getElementById('toast');
@@ -61,37 +62,71 @@ function topbar(opts){
   ${o.bar?`<div class="demobar">${o.bar}</div>`:''}`;
 }
 
-/* ---------- denah ---------- */
-function arah(u){
-  if(u.u.indexOf('K')>-1)return'Kios di tengah koridor, tepat seberang lift.';
-  const r=parseInt(u.r.split('/')[0],10);
-  if(r<=1)return'Deret depan sisi utara. Dari eskalator utama lantai 3, belok kiri, ikuti deretan sampai nomor kios.';
-  if(r<=5)return'Sisi barat, tepat sebelum eskalator. Dari eskalator, jalan lurus lalu belok kanan.';
-  if(r<=8)return'Sisi barat bagian dalam, dekat toilet dan lift.';
-  return'Deret belakang sisi selatan. Dari eskalator utama, jalan lurus melewati atrium.';
+/* ---------- arah ---------- */
+const ZONA_ARAH={
+ A:'Blok luar sisi utara, deret paling depan setelah pintu masuk utama.',
+ B:'Sayap barat. Dari atrium tengah, ambil koridor kiri.',
+ C:'Sayap timur. Dari atrium tengah, ambil koridor kanan.',
+ D:'Blok tengah, mengelilingi atrium dan eskalator.',
+ E:'Kios di tengah koridor, area terbuka dekat toilet dan lift.',
+ F:'Deret selatan, sebelum area anchor tenant.',
+ G:'Anchor tenant di sisi selatan, pintu masuknya lebar dan mudah terlihat.'};
+function arah(u){return ZONA_ARAH[u.z]||'Lantai 3.'}
+
+/* ---------- denah SVG ---------- */
+let PLAN_ZONE='ALL';
+function planBox(zone){
+  if(zone==='ALL')return{x:0,y:0,w:PLAN_W,h:PLAN_H};
+  const list=units().filter(u=>u.z===zone);
+  if(!list.length)return{x:0,y:0,w:PLAN_W,h:PLAN_H};
+  const x1=Math.min(...list.map(u=>u.x)),y1=Math.min(...list.map(u=>u.y));
+  const x2=Math.max(...list.map(u=>u.x+u.w)),y2=Math.max(...list.map(u=>u.y+u.h));
+  const p=44;return{x:x1-p,y:y1-p,w:(x2-x1)+p*2,h:(y2-y1)+p*2};
 }
-function renderPlan(planEl,listEl){
-  const U=units();let h='';
-  const cell=u=>{const v=!isLive(u),lab=v?(u.nonaktif?'Tidak tampil':(u.sis==='renovasi'?'Renovasi':'Tersedia')):u.n;
-    h+=`<button class="unit ${v?'vacant':u.k}" style="grid-column:${u.c};grid-row:${u.r}" data-u="${u.u}">
-      <span class="cat-bar"></span><span class="code">${u.u}</span><span class="nm">${esc(lab)}</span></button>`};
-  U.slice(0,6).forEach(cell);
-  h+=`<div class="corridor" style="grid-row:4/5">· · · · · K O R I D O R · · · · ·</div>`;
-  U.slice(6,14).forEach(cell);
-  FIXTURES.forEach(f=>h+=`<div class="fixture" style="grid-column:${f.c};grid-row:${f.r}">${f.t}</div>`);
-  h+=`<div class="corridor" style="grid-row:11/12">· · · · · K O R I D O R · · · · ·</div>`;
-  U.slice(14).forEach(cell);
-  planEl.innerHTML=h;
-  if(listEl)listEl.innerHTML=U.map(u=>{const v=!isLive(u);
-    return `<button class="${v?'vacant':u.k}" data-u="${u.u}"><span class="lc">${u.u}</span>
-    <span><span class="ln">${esc(v?(u.nonaktif?'Tidak tampil':(u.sis==='renovasi'?'Renovasi':'Tersedia')):u.n)}</span><br>
-    <span class="lk">${v?'—':esc(u.kat)+' · '+u.jam}</span></span></button>`}).join('');
+function renderPlan(planEl,listEl,zone){
+  if(zone)PLAN_ZONE=zone;
+  const U=units(),b=planBox(PLAN_ZONE),full=PLAN_ZONE==='ALL';
+  const fs=Math.max(8,Math.round(b.w/60));
+  let s=`<svg class="plan-svg ${full?'all':'zoom'}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Denah lantai 3">`;
+  FIXTURES.forEach(f=>{s+=`<rect class="fx" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="3"/>`+
+    `<text class="fxt" x="${f.x+f.w/2}" y="${f.y+f.h/2+fs/3}" font-size="${fs*.85}" text-anchor="middle">${f.t}</text>`});
+  U.forEach(u=>{
+    const v=!isLive(u),cls=v?'vacant':u.k,dim=(!full&&u.z!==PLAN_ZONE)?' dim':'';
+    s+=`<rect class="u ${cls}${dim}" data-u="${u.u}" x="${u.x}" y="${u.y}" width="${u.w}" height="${u.h}" rx="2">`+
+       `<title>${esc(u.u)} — ${esc(u.n||'kosong')}</title></rect>`;
+    if((!full&&u.z===PLAN_ZONE)||u.z==='G')
+      s+=`<text class="ut" x="${u.x+u.w/2}" y="${u.y+u.h/2+fs/3}" font-size="${u.z==='G'?fs*1.05:fs}" text-anchor="middle">${u.u.replace('L3-','')}</text>`;
+  });
+  s+='</svg>';
+  planEl.innerHTML=s;
+  if(listEl){
+    const list=full?U:U.filter(u=>u.z===PLAN_ZONE);
+    listEl.innerHTML=list.map(u=>{const v=!isLive(u);
+      return `<button class="${v?'vacant':u.k}" data-u="${u.u}"><span class="lc">${u.u.replace('L3-','')}</span>
+      <span><span class="ln">${esc(v?(u.nonaktif?'Tidak tampil':(u.sis==='renovasi'?'Renovasi':'Tersedia')):u.n)}</span><br>
+      <span class="lk">${v?'—':esc(u.kat)+' · '+u.jam}</span></span></button>`}).join('');
+  }
+}
+function selectUnit(code){
+  document.querySelectorAll('.plan-svg .u').forEach(e=>e.classList.toggle('sel',e.dataset.u===code));
 }
 function flashUnit(code){
+  const u=unit(code);if(!u)return;
   const pv=document.querySelector('.viewtog button[data-pv="plan"]');
   if(pv&&!pv.classList.contains('on'))pv.click();
+  const zb=document.querySelector('.zonebar button[data-z="'+u.z+'"]');
+  if(zb&&!zb.classList.contains('on'))zb.click();
   const pc=document.querySelector('.plan-card');if(pc)pc.scrollIntoView({behavior:'smooth',block:'center'});
-  const el=document.querySelector('.unit[data-u="'+code+'"]');
-  if(el){el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
-    clearTimeout(el._ft);el._ft=setTimeout(()=>el.classList.remove('flash'),2200)}
+  setTimeout(()=>{
+    const el=document.querySelector('.plan-svg [data-u="'+code+'"]');
+    if(el){el.classList.remove('flash');void el.getBoundingClientRect();el.classList.add('flash');
+      clearTimeout(el._ft);el._ft=setTimeout(()=>el.classList.remove('flash'),2400)}},80);
+}
+function zonebar(el,onPick){
+  el.innerHTML=`<button data-z="ALL" class="on">SEMUA · 200</button>`+
+    Object.keys(ZONES).map(z=>{const n=SEED_UNITS.filter(u=>u.z===z).length;
+      return `<button data-z="${z}">${z} · ${esc(ZONES[z])} · ${n}</button>`}).join('');
+  el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+    onPick(b.dataset.z)});
 }

@@ -11,7 +11,7 @@
 <div class="shell">
   <section class="plan-card">
     <div class="plan-head">
-      <div><div class="plan-title">Denah Lantai 3</div><div class="plan-sub">20 UNIT · ZONA TIMUR</div></div>
+      <div><div class="plan-title">Denah Lantai 3</div><div class="plan-sub">200 UNIT · 7 ZONA</div></div>
       <div class="legend">
         <span class="lg"><i style="background:#E9B429"></i>KULINER</span>
         <span class="lg"><i style="background:#2F8F82"></i>RITEL</span>
@@ -19,6 +19,7 @@
         <span class="lg"><i style="background:#1E4A50;border:1px dashed rgba(241,238,229,.35)"></i>KOSONG</span>
       </div>
     </div>
+    <div class="zonebar" id="zonebar"></div>
     <div class="viewtog"><button data-pv="plan">DENAH</button><button data-pv="list">DAFTAR</button></div>
     <div class="plan" id="plan"></div>
     <div id="planList"></div>
@@ -38,7 +39,10 @@ document.getElementById('top').innerHTML=topbar({search:true,
   bar:'MODE DEMO · data contoh. Halaman ini yang dibuka pengunjung setelah memindai QR di pintu masuk.'});
 
 /* denah */
-renderPlan(document.getElementById('plan'),document.getElementById('planList'));
+const planEl=document.getElementById('plan'),listEl=document.getElementById('planList');
+renderPlan(planEl,listEl,'ALL');
+zonebar(document.getElementById('zonebar'),z=>{renderPlan(planEl,listEl,z);
+  toast(z==='ALL'?'Menampilkan seluruh lantai.':'Zona '+z+' — '+ZONES[z])});
 document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{
   const L=b.dataset.pv==='list';
   document.querySelectorAll('.viewtog button').forEach(x=>x.classList.toggle('on',x===b));
@@ -50,7 +54,7 @@ document.querySelector('.viewtog button[data-pv="'+(matchMedia('(max-width:700px
 const detail=document.getElementById('detail'),results=document.getElementById('results'),listlbl=document.getElementById('listlbl');
 function showDetail(code){
   const u=unit(code);if(!u)return;
-  document.querySelectorAll('.unit').forEach(e=>e.classList.toggle('sel',e.dataset.u===code));
+  selectUnit(code);
   if(!isLive(u)){detail.innerHTML=`<div class="card-lbl">UNIT ${u.u}</div><h2 class="detail-name">Unit ini belum terisi</h2>
     <div class="chips"><span class="chip">${u.sis==='renovasi'?'Sedang direnovasi':'Tersedia untuk disewa'}</span></div>
     <p class="empty-note">Tertarik membuka usaha di sini? Hubungi tim leasing di 021-5500-3300.</p>`;return}
@@ -66,10 +70,12 @@ function showDetail(code){
 }
 function renderList(f){
   f=(f||'').trim().toLowerCase();
-  const it=units().filter(u=>isLive(u)&&(!f||u.n.toLowerCase().indexOf(f)>-1||u.kat.toLowerCase().indexOf(f)>-1||
+  const all=units().filter(u=>isLive(u)&&(!f||u.n.toLowerCase().indexOf(f)>-1||u.kat.toLowerCase().indexOf(f)>-1||
       u.u.toLowerCase().indexOf(f)>-1||(u.kws||[]).some(k=>k[0].indexOf(f)>-1)))
     .sort((a,b)=>RANK[a.tier]-RANK[b.tier]||b.views-a.views);
-  listlbl.textContent=f?`${it.length} HASIL UNTUK “${f.toUpperCase()}”`:'SEMUA TOKO DI LANTAI INI';
+  const it=all.slice(0,f?60:40);
+  listlbl.textContent=f?`${all.length} HASIL UNTUK “${f.toUpperCase()}”${all.length>it.length?' · 60 TERATAS':''}`
+    :`${all.length} TOKO DI LANTAI INI · ${it.length} TERPOPULER`;
   if(!it.length){results.innerHTML=`<p class="empty-note">Belum ada toko yang cocok di lantai ini. Kalau Anda melihat tokonya ada di lapangan, klaim kupon lewat tab “Kasirnya tidak ada QR?” di bawah.</p>`;logZero(f);return}
   results.innerHTML=it.map(u=>`<button class="res" data-u="${u.u}"><span class="rc">${u.u}</span>
     <span><span class="rn">${esc(u.n)}</span>${u.tier==='sorotan'?'<span class="sor">SOROTAN</span>':''}<br>

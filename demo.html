@@ -42,11 +42,14 @@
 <script src="assets/app.js"></script>
 <script>
 document.getElementById('top').innerHTML=topbar({tag:'PERAGAAN'});
-const DEFAULT_KIOS=['L3-06','L3-09','L3-13'];
+const _a=SEED_UNITS.filter(u=>u.sis==='aktif');
+const DEFAULT_KIOS=[(_a.find(u=>u.qr==='belum')||_a[0]).u,
+  (_a.find(u=>u.tier==='sorotan')||_a[1]).u,
+  (_a.find(u=>u.z==='G')||_a[2]).u];
 let list=DB.get('demoQR',DEFAULT_KIOS);
 
 const pick=document.getElementById('pick');
-units().filter(u=>u.sis==='aktif').forEach(u=>pick.innerHTML+=`<option value="${u.u}">${u.u} · ${u.n}</option>`);
+units().filter(u=>u.sis==='aktif').forEach(u=>pick.innerHTML+=`<option value="${u.u}">${u.u.replace('L3-','')} · ${u.n}</option>`);
 
 function render(){
   const items=[{role:'QR PINTU MASUK',nama:'Direktori '+cfg().namaMall,link:baseURL()+'index.html',

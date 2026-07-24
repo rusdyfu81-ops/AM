@@ -36,7 +36,7 @@
 <script>
 const C=cfg();
 document.getElementById('top').innerHTML=topbar({search:true,
-  bar:'MODE DEMO · data contoh. Halaman ini yang dibuka pengunjung setelah memindai QR di pintu masuk.'});
+  bar:'MODE DEMO · data contoh'});
 
 /* denah */
 const planEl=document.getElementById('plan'),listEl=document.getElementById('planList');
@@ -46,9 +46,9 @@ zonebar(document.getElementById('zonebar'),z=>{renderPlan(planEl,listEl,z);
 document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{
   const L=b.dataset.pv==='list';
   document.querySelectorAll('.viewtog button').forEach(x=>x.classList.toggle('on',x===b));
-  document.getElementById('plan').style.display=L?'none':'grid';
+  document.getElementById('plan').style.display=L?'none':'block';
   document.getElementById('planList').style.display=L?'flex':'none'});
-document.querySelector('.viewtog button[data-pv="'+(matchMedia('(max-width:700px)').matches?'list':'plan')+'"]').click();
+document.querySelector('.viewtog button[data-pv="plan"]').click();
 
 /* detail + daftar */
 const detail=document.getElementById('detail'),results=document.getElementById('results'),listlbl=document.getElementById('listlbl');

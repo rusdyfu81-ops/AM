@@ -73,8 +73,10 @@ const ZONA_ARAH={
  G:'Anchor tenant di sisi selatan, pintu masuknya lebar dan mudah terlihat.'};
 function arah(u){return ZONA_ARAH[u.z]||'Lantai 3.'}
 
-/* ---------- denah SVG ---------- */
-let PLAN_ZONE='ALL';
+/* ---------- denah SVG: cubit, geser, ketuk ---------- */
+let PLAN_ZONE='ALL', VB=null, BASE=null, SVGEL=null;
+const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
+
 function planBox(zone){
   if(zone==='ALL')return{x:0,y:0,w:PLAN_W,h:PLAN_H};
   const list=units().filter(u=>u.z===zone);
@@ -83,22 +85,101 @@ function planBox(zone){
   const x2=Math.max(...list.map(u=>u.x+u.w)),y2=Math.max(...list.map(u=>u.y+u.h));
   const p=44;return{x:x1-p,y:y1-p,w:(x2-x1)+p*2,h:(y2-y1)+p*2};
 }
+function applyVB(v,smooth){
+  const minW=BASE.w/16, maxW=BASE.w*1.08;
+  let w=clampN(v.w,minW,maxW), h=w*(BASE.h/BASE.w);
+  const pad=Math.max(BASE.w,BASE.h)*.28;
+  let x=clampN(v.x,BASE.x-pad,BASE.x+BASE.w+pad-w);
+  let y=clampN(v.y,BASE.y-pad,BASE.y+BASE.h+pad-h);
+  VB={x,y,w,h};
+  if(!SVGEL)return;
+  SVGEL.style.transition=smooth?'none':'';
+  SVGEL.setAttribute('viewBox',`${x} ${y} ${w} ${h}`);
+  SVGEL.classList.toggle('lbl',w<=560);
+  const z=BASE.w/w;
+  const zl=document.getElementById('zlvl');if(zl)zl.textContent=z.toFixed(1)+'×';
+}
+function zoomBy(f,cx,cy){
+  const r=SVGEL.getBoundingClientRect();
+  const px=cx==null?.5:(cx-r.left)/r.width, py=cy==null?.5:(cy-r.top)/r.height;
+  const ax=VB.x+px*VB.w, ay=VB.y+py*VB.h;
+  const nw=VB.w/f, nh=nw*(BASE.h/BASE.w);
+  applyVB({x:ax-px*nw,y:ay-py*nh,w:nw,h:nh});
+}
+function focusUnit(code,zoom){
+  const u=unit(code);if(!u||!SVGEL)return;
+  const pad=Math.max(u.w,u.h)*(zoom||3.2);
+  applyVB({x:u.x+u.w/2-pad,y:u.y+u.h/2-pad*(BASE.h/BASE.w),w:pad*2,h:0});
+}
+function gestures(svg){
+  let mode=0,sx=0,sy=0,sVB=null,sDist=0,sMid=null,lastTap=0;
+  const R=()=>svg.getBoundingClientRect();
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  const mid=t=>({x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2});
+  const toSvg=(cx,cy)=>{const r=R();return{x:VB.x+(cx-r.left)/r.width*VB.w,y:VB.y+(cy-r.top)/r.height*VB.h}};
+
+  svg.addEventListener('touchstart',e=>{
+    const t=e.touches;
+    if(t.length===1){mode=1;sx=t[0].clientX;sy=t[0].clientY;sVB={...VB};
+      const now=Date.now();
+      if(now-lastTap<300){zoomBy(2,sx,sy);mode=0}
+      lastTap=now;
+    }else if(t.length===2){mode=2;sDist=dist(t);sMid=toSvg(mid(t).x,mid(t).y);sVB={...VB}}
+  },{passive:true});
+
+  svg.addEventListener('touchmove',e=>{
+    const t=e.touches,r=R();
+    if(mode===1&&t.length===1){
+      e.preventDefault();
+      const dx=(t[0].clientX-sx)/r.width*sVB.w, dy=(t[0].clientY-sy)/r.height*sVB.h;
+      applyVB({x:sVB.x-dx,y:sVB.y-dy,w:sVB.w,h:sVB.h},true);
+    }else if(mode===2&&t.length===2){
+      e.preventDefault();
+      const nw=sVB.w*(sDist/dist(t)), nh=nw*(BASE.h/BASE.w);
+      const m=mid(t),px=(m.x-r.left)/r.width,py=(m.y-r.top)/r.height;
+      applyVB({x:sMid.x-px*nw,y:sMid.y-py*nh,w:nw,h:nh},true);
+    }
+  },{passive:false});
+  svg.addEventListener('touchend',()=>{mode=0;svg.style.transition=''},{passive:true});
+
+  /* desktop */
+  svg.addEventListener('wheel',e=>{e.preventDefault();
+    zoomBy(e.deltaY<0?1.18:1/1.18,e.clientX,e.clientY)},{passive:false});
+  let drag=false,dx0=0,dy0=0,dVB=null;
+  svg.addEventListener('mousedown',e=>{drag=true;dx0=e.clientX;dy0=e.clientY;dVB={...VB};svg.style.cursor='grabbing'});
+  addEventListener('mousemove',e=>{if(!drag)return;const r=R();
+    applyVB({x:dVB.x-(e.clientX-dx0)/r.width*dVB.w,y:dVB.y-(e.clientY-dy0)/r.height*dVB.h,w:dVB.w,h:dVB.h},true)});
+  addEventListener('mouseup',()=>{drag=false;svg.style.cursor='';svg.style.transition=''});
+}
 function renderPlan(planEl,listEl,zone){
   if(zone)PLAN_ZONE=zone;
-  const U=units(),b=planBox(PLAN_ZONE),full=PLAN_ZONE==='ALL';
-  const fs=Math.max(8,Math.round(b.w/60));
-  let s=`<svg class="plan-svg ${full?'all':'zoom'}" viewBox="${b.x} ${b.y} ${b.w} ${b.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Denah lantai 3">`;
-  FIXTURES.forEach(f=>{s+=`<rect class="fx" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="3"/>`+
-    `<text class="fxt" x="${f.x+f.w/2}" y="${f.y+f.h/2+fs/3}" font-size="${fs*.85}" text-anchor="middle">${f.t}</text>`});
+  const U=units();BASE=planBox(PLAN_ZONE);
+  const full=PLAN_ZONE==='ALL';
+  let s=`<div class="plan-wrap"><svg class="plan-svg" viewBox="${BASE.x} ${BASE.y} ${BASE.w} ${BASE.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Denah lantai 3">`;
+  FIXTURES.forEach(f=>{const fz=Math.min(f.w/8,f.h/5);
+    s+=`<rect class="fx" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="3"/>`+
+       `<text class="fxt" x="${f.x+f.w/2}" y="${f.y+f.h/2+fz/3}" font-size="${fz}" text-anchor="middle">${f.t}</text>`});
   U.forEach(u=>{
     const v=!isLive(u),cls=v?'vacant':u.k,dim=(!full&&u.z!==PLAN_ZONE)?' dim':'';
+    const fz=Math.min(u.w/3.4,u.h/2.4);
     s+=`<rect class="u ${cls}${dim}" data-u="${u.u}" x="${u.x}" y="${u.y}" width="${u.w}" height="${u.h}" rx="2">`+
-       `<title>${esc(u.u)} — ${esc(u.n||'kosong')}</title></rect>`;
-    if((!full&&u.z===PLAN_ZONE)||u.z==='G')
-      s+=`<text class="ut" x="${u.x+u.w/2}" y="${u.y+u.h/2+fs/3}" font-size="${u.z==='G'?fs*1.05:fs}" text-anchor="middle">${u.u.replace('L3-','')}</text>`;
+       `<title>${esc(u.u)} — ${esc(u.n||'kosong')}</title></rect>`+
+       `<text class="ut${u.z==='G'?' big':''}${dim?' dim':''}" x="${u.x+u.w/2}" y="${u.y+u.h/2+fz/3}" font-size="${fz}" text-anchor="middle">${u.u.replace('L3-','')}</text>`;
   });
-  s+='</svg>';
+  s+=`</svg><div class="zoomctl">
+    <button data-zm="in" aria-label="Perbesar">+</button>
+    <button data-zm="out" aria-label="Perkecil">−</button>
+    <button data-zm="fit" aria-label="Sesuaikan">⤢</button>
+    <span id="zlvl">1.0×</span></div>
+    <div class="planhint">Cubit untuk memperbesar · ketuk dua kali untuk zoom · geser untuk berpindah</div></div>`;
   planEl.innerHTML=s;
+  SVGEL=planEl.querySelector('.plan-svg');
+  applyVB({...BASE});
+  gestures(SVGEL);
+  planEl.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{
+    if(b.dataset.zm==='in')zoomBy(1.6);
+    else if(b.dataset.zm==='out')zoomBy(1/1.6);
+    else applyVB({...BASE})});
   if(listEl){
     const list=full?U:U.filter(u=>u.z===PLAN_ZONE);
     listEl.innerHTML=list.map(u=>{const v=!isLive(u);
@@ -118,9 +199,10 @@ function flashUnit(code){
   if(zb&&!zb.classList.contains('on'))zb.click();
   const pc=document.querySelector('.plan-card');if(pc)pc.scrollIntoView({behavior:'smooth',block:'center'});
   setTimeout(()=>{
+    focusUnit(code);selectUnit(code);
     const el=document.querySelector('.plan-svg [data-u="'+code+'"]');
     if(el){el.classList.remove('flash');void el.getBoundingClientRect();el.classList.add('flash');
-      clearTimeout(el._ft);el._ft=setTimeout(()=>el.classList.remove('flash'),2400)}},80);
+      clearTimeout(el._ft);el._ft=setTimeout(()=>el.classList.remove('flash'),2600)}},90);
 }
 function zonebar(el,onPick){
   el.innerHTML=`<button data-z="ALL" class="on">SEMUA · 200</button>`+

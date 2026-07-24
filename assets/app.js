@@ -85,9 +85,21 @@ function planBox(zone){
   const x2=Math.max(...list.map(u=>u.x+u.w)),y2=Math.max(...list.map(u=>u.y+u.h));
   const p=44;return{x:x1-p,y:y1-p,w:(x2-x1)+p*2,h:(y2-y1)+p*2};
 }
+function elAspect(){
+  if(!SVGEL)return PLAN_H/PLAN_W;
+  const r=SVGEL.getBoundingClientRect();
+  return (r.width&&r.height)?r.height/r.width:PLAN_H/PLAN_W;
+}
+/* lebarkan kotak agar rasionya sama dengan frame — supaya tidak ada bagian terpotong
+   dan gerakan cubit/geser memetakan satu banding satu */
+function fitBox(b){
+  const a=elAspect();let w=b.w,h=b.h;
+  if(h/w<a)h=w*a;else w=h/a;
+  return{x:b.x+b.w/2-w/2,y:b.y+b.h/2-h/2,w,h};
+}
 function applyVB(v,smooth){
   const minW=BASE.w/16, maxW=BASE.w*1.08;
-  let w=clampN(v.w,minW,maxW), h=w*(BASE.h/BASE.w);
+  let w=clampN(v.w,minW,maxW), h=w*elAspect();
   const pad=Math.max(BASE.w,BASE.h)*.28;
   let x=clampN(v.x,BASE.x-pad,BASE.x+BASE.w+pad-w);
   let y=clampN(v.y,BASE.y-pad,BASE.y+BASE.h+pad-h);
@@ -103,13 +115,13 @@ function zoomBy(f,cx,cy){
   const r=SVGEL.getBoundingClientRect();
   const px=cx==null?.5:(cx-r.left)/r.width, py=cy==null?.5:(cy-r.top)/r.height;
   const ax=VB.x+px*VB.w, ay=VB.y+py*VB.h;
-  const nw=VB.w/f, nh=nw*(BASE.h/BASE.w);
+  const nw=VB.w/f, nh=nw*elAspect();
   applyVB({x:ax-px*nw,y:ay-py*nh,w:nw,h:nh});
 }
 function focusUnit(code,zoom){
   const u=unit(code);if(!u||!SVGEL)return;
-  const pad=Math.max(u.w,u.h)*(zoom||3.2);
-  applyVB({x:u.x+u.w/2-pad,y:u.y+u.h/2-pad*(BASE.h/BASE.w),w:pad*2,h:0});
+  const a=elAspect(), pad=Math.max(u.w,u.h)*(zoom||2.8);
+  applyVB({x:u.x+u.w/2-pad,y:u.y+u.h/2-pad*a,w:pad*2,h:pad*2*a});
 }
 function gestures(svg){
   let mode=0,sx=0,sy=0,sVB=null,sDist=0,sMid=null,lastTap=0;
@@ -135,7 +147,7 @@ function gestures(svg){
       applyVB({x:sVB.x-dx,y:sVB.y-dy,w:sVB.w,h:sVB.h},true);
     }else if(mode===2&&t.length===2){
       e.preventDefault();
-      const nw=sVB.w*(sDist/dist(t)), nh=nw*(BASE.h/BASE.w);
+      const nw=sVB.w*(sDist/dist(t)), nh=nw*elAspect();
       const m=mid(t),px=(m.x-r.left)/r.width,py=(m.y-r.top)/r.height;
       applyVB({x:sMid.x-px*nw,y:sMid.y-py*nh,w:nw,h:nh},true);
     }
@@ -153,9 +165,10 @@ function gestures(svg){
 }
 function renderPlan(planEl,listEl,zone){
   if(zone)PLAN_ZONE=zone;
-  const U=units();BASE=planBox(PLAN_ZONE);
+  const U=units();
   const full=PLAN_ZONE==='ALL';
-  let s=`<div class="plan-wrap"><svg class="plan-svg" viewBox="${BASE.x} ${BASE.y} ${BASE.w} ${BASE.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Denah lantai 3">`;
+  const B0=planBox(PLAN_ZONE);
+  let s=`<div class="plan-wrap"><svg class="plan-svg" viewBox="${B0.x} ${B0.y} ${B0.w} ${B0.h}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Denah lantai 3">`;
   FIXTURES.forEach(f=>{const fz=Math.min(f.w/8,f.h/5);
     s+=`<rect class="fx" x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="3"/>`+
        `<text class="fxt" x="${f.x+f.w/2}" y="${f.y+f.h/2+fz/3}" font-size="${fz}" text-anchor="middle">${f.t}</text>`});
@@ -174,6 +187,7 @@ function renderPlan(planEl,listEl,zone){
     <div class="planhint">Cubit untuk memperbesar · ketuk dua kali untuk zoom · geser untuk berpindah</div></div>`;
   planEl.innerHTML=s;
   SVGEL=planEl.querySelector('.plan-svg');
+  BASE=fitBox(planBox(PLAN_ZONE));
   applyVB({...BASE});
   gestures(SVGEL);
   planEl.querySelectorAll('[data-zm]').forEach(b=>b.onclick=()=>{
@@ -188,6 +202,11 @@ function renderPlan(planEl,listEl,zone){
       <span class="lk">${v?'—':esc(u.kat)+' · '+u.jam}</span></span></button>`}).join('');
   }
 }
+let _rz;
+addEventListener('resize',()=>{clearTimeout(_rz);_rz=setTimeout(()=>{
+  if(!SVGEL||!BASE)return;const c=VB?{x:VB.x+VB.w/2,y:VB.y+VB.h/2,w:VB.w}:null;
+  BASE=fitBox(planBox(PLAN_ZONE));
+  if(c)applyVB({x:c.x-c.w/2,y:c.y-c.w*elAspect()/2,w:c.w,h:0});else applyVB({...BASE})},160)});
 function selectUnit(code){
   document.querySelectorAll('.plan-svg .u').forEach(e=>e.classList.toggle('sel',e.dataset.u===code));
 }

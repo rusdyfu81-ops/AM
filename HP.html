@@ -94,12 +94,13 @@
   /* ---------- hero ---------- */
   .hero{
     background:
-      linear-gradient(180deg, var(--navy) 0%, var(--navy) 62%, var(--cream) 62%);
+      linear-gradient(180deg, rgba(18,33,61,0.94) 0%, rgba(18,33,61,0.97) 62%, var(--cream) 62%),
+      url('https://images.unsplash.com/photo-1757476622917-831efd8f3418?q=80&w=1600&auto=format&fit=crop') center 30%/cover no-repeat;
     color:var(--cream);
     position:relative;
     overflow:hidden;
   }
-  .hero .wrap{padding-top:56px;padding-bottom:0;}
+  .hero .wrap{padding-top:56px;padding-bottom:0;position:relative;}
   .hero-grid{
     display:grid;grid-template-columns:1.2fr 0.8fr;gap:40px;align-items:end;
   }
@@ -234,12 +235,16 @@
     display:flex;flex-direction:column;
   }
   .promo-thumb{
-    height:150px;
-    background:
-      repeating-linear-gradient(135deg, rgba(216,164,78,0.16) 0 14px, rgba(216,164,78,0.05) 14px 28px);
+    height:170px;
+    background-size:cover;background-position:center;
+    position:relative;
     border-bottom:1px solid var(--line);
-    display:flex;align-items:flex-start;justify-content:flex-end;padding:14px;
   }
+  .promo-thumb::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(18,33,61,0.05) 0%, rgba(18,33,61,0.55) 100%);
+  }
+  .promo-thumb .tag{position:absolute;top:14px;right:14px;z-index:1;}
   .tag{
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;
     background:var(--coral);color:var(--cream);padding:4px 9px;
@@ -258,7 +263,15 @@
     display:grid;grid-template-columns:1fr 1fr;gap:1px;
     background:rgba(29,33,41,0.14);border:1px solid rgba(29,33,41,0.14);
   }
-  .feature-card{background:var(--cream);padding:40px;}
+  .feature-card{background:var(--cream);padding:0;display:flex;flex-direction:column;}
+  .feature-photo{
+    height:200px;background-size:cover;background-position:center;position:relative;
+  }
+  .feature-photo::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(18,33,61,0.05) 0%, rgba(18,33,61,0.5) 100%);
+  }
+  .feature-text{padding:34px 40px 40px;}
   .feature-card.dark{background:var(--green);color:var(--cream);}
   .feature-card .code{
     font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
@@ -446,7 +459,9 @@
     </div>
     <div class="promo-cards">
       <div class="promo-card">
-        <div class="promo-thumb"><span class="tag">Tenant Baru</span></div>
+        <div class="promo-thumb" style="background-image:url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&amp;w=800&amp;auto=format&amp;fit=crop');">
+          <span class="tag">Tenant Baru</span>
+        </div>
         <div class="promo-body">
           <h3>Hapimart hadir di Seasons City</h3>
           <p>Kebutuhan harian dan groceries kini tersedia di dua lantai — UGF dan FL1.</p>
@@ -454,7 +469,9 @@
         </div>
       </div>
       <div class="promo-card">
-        <div class="promo-thumb"><span class="tag">Diskon</span></div>
+        <div class="promo-thumb" style="background-image:url('https://images.unsplash.com/photo-1761090617068-f1b3257d27ad?q=80&amp;w=800&amp;auto=format&amp;fit=crop');">
+          <span class="tag">Diskon</span>
+        </div>
         <div class="promo-body">
           <h3>Diskon akhir musim, semua lantai</h3>
           <p>Potongan harga bertahap untuk kategori fashion, sepatu, dan aksesoris.</p>
@@ -462,7 +479,9 @@
         </div>
       </div>
       <div class="promo-card">
-        <div class="promo-thumb"><span class="tag">Layanan</span></div>
+        <div class="promo-thumb" style="background-image:url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&amp;w=800&amp;auto=format&amp;fit=crop');">
+          <span class="tag">Layanan</span>
+        </div>
         <div class="promo-body">
           <h3>Wedding Center &mdash; konsultasi gratis</h3>
           <p>Satu lantai khusus bridal, dekorasi, dan vendor pernikahan.</p>
@@ -477,16 +496,22 @@
   <div class="wrap" style="padding:0;max-width:none;">
     <div class="feature-split">
       <div class="feature-card">
-        <span class="code">Sorotan &mdash; UGF &amp; FL1</span>
-        <h3>Hapimart</h3>
-        <p>Groceries, kebutuhan rumah tangga, dan produk harian dalam satu tenant besar di dua lantai.</p>
-        <a class="btn btn-ghost" style="border-color:rgba(29,33,41,0.25);color:var(--ink);" href="#">Lihat lokasi &#8594;</a>
+        <div class="feature-photo" style="background-image:url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&amp;w=900&amp;auto=format&amp;fit=crop');"></div>
+        <div class="feature-text">
+          <span class="code">Sorotan &mdash; UGF &amp; FL1</span>
+          <h3>Hapimart</h3>
+          <p>Groceries, kebutuhan rumah tangga, dan produk harian dalam satu tenant besar di dua lantai.</p>
+          <a class="btn btn-ghost" style="border-color:rgba(29,33,41,0.25);color:var(--ink);" href="#">Lihat lokasi &#8594;</a>
+        </div>
       </div>
       <div class="feature-card dark">
-        <span class="code">Sorotan &mdash; FL2</span>
-        <h3>Wedding Center</h3>
-        <p>Butik bridal, dekorasi, hingga fotografi &mdash; disatukan agar rencana pernikahan tak perlu pindah gedung.</p>
-        <a class="btn btn-primary" href="#">Jelajahi Bridal &#8594;</a>
+        <div class="feature-photo" style="background-image:url('https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&amp;w=900&amp;auto=format&amp;fit=crop');"></div>
+        <div class="feature-text">
+          <span class="code">Sorotan &mdash; FL2</span>
+          <h3>Wedding Center</h3>
+          <p>Butik bridal, dekorasi, hingga fotografi &mdash; disatukan agar rencana pernikahan tak perlu pindah gedung.</p>
+          <a class="btn btn-primary" href="#">Jelajahi Bridal &#8594;</a>
+        </div>
       </div>
     </div>
   </div>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rekonsiliasi Okupansi — Lantai 3</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>body{background:#FAF8F3}</style>
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap">
+  <div class="admin-h">Rekonsiliasi data okupansi — Lantai 3</div>
+  <p class="admin-sub">Membandingkan catatan sistem dengan kondisi lapangan. Sebuah baris hanya naik statusnya kalau didukung <b>minimal dua sumber yang saling bebas</b>. Ini catatan kerja internal, bukan kesimpulan.</p>
+  <div class="admin-tools noprint">
+    <button class="tbtn" onclick="window.print()">Cetak ringkasan</button>
+    <button class="tbtn" id="expAll">Buka semua baris</button>
+    <button class="tbtn" id="hideName">Sembunyikan nama usaha</button>
+  </div>
+  <div class="money" id="money"></div>
+  <div class="stats" id="stats"></div>
+  <p class="reconcile" id="recon"></p>
+  <div class="sec-h">BARIS SELISIH — DIDUKUNG 2 SUMBER ATAU LEBIH</div>
+  <div id="hardList"></div>
+  <div class="sec-h">CATATAN — BARU 1 SUMBER, BELUM CUKUP UNTUK DISIMPULKAN</div>
+  <div id="softList"></div>
+  <p class="gapline">Aturan dua sumber ini bukan sekadar soal akurasi. Kalau perkaranya sampai ke ranah hukum, temuan yang berdiri di atas dua sumber independen jauh lebih sulit dipatahkan daripada tumpukan laporan sepihak.</p>
+
+  <div class="sec-h">MASUKAN BARU DARI LAPANGAN</div>
+  <div id="feed"></div>
+
+  <div class="sec-h">DICARI PENGUNJUNG, TIDAK DITEMUKAN DI LANTAI INI</div>
+  <div id="zero"></div>
+  <p class="gapline">Ini bukan kegagalan sistem, melainkan daftar permintaan pasar yang belum terlayani — bahan langsung untuk menentukan tenant berikutnya.</p>
+</div>
+<script src="assets/qrcode.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+document.getElementById('top').innerHTML=topbar({tag:'PENGELOLA',
+  bar:'MODE DEMO · seluruh angka di halaman ini adalah ILUSTRASI dengan tarif contoh, bukan data nyata. Angka sebenarnya baru keluar setelah pendataan lapangan.'});
+const C=cfg();
+if(!C.fRekonsiliasi){document.querySelector('.wrap').innerHTML=
+  '<div class="card"><h2>Panel rekonsiliasi sedang dimatikan</h2><p class="empty-note" style="margin-top:8px">Nyalakan kembali lewat halaman konfigurasi.</p></div>'}
+let hideNames=false;
+const done=DB.get('done',{});
+
+function render(){
+  if(!C.fRekonsiliasi)return;
+  const ids=Object.keys(CASES),score=id=>EVIDENCE[id].reduce((s,e)=>s+SRC[e[0]][1],0);
+  const hard=ids.filter(i=>EVIDENCE[i].length>=2),soft=ids.filter(i=>EVIDENCE[i].length<2);
+  const hilang=hard.filter(i=>!CASES[i].tel).reduce((s,i)=>s+CASES[i].nilai,0);
+  const telusur=hard.filter(i=>CASES[i].tel).reduce((s,i)=>s+CASES[i].nilai,0);
+  document.getElementById('money').innerHTML=`<b>${jt(hilang)}</b>
+    <span>Perkiraan sewa yang tidak masuk pembukuan dari 3 unit di lantai ini, dihitung dari tarif contoh × lama periode.
+    Ditambah ${jt(telusur)} pembayaran yang perlu ditelusuri ke mana masuknya. Angka ini baru dari satu lantai, dan masih berupa ilustrasi.</span>`;
+  const U=units(),tercatat=U.filter(u=>u.sis==='aktif').length,adaToko=U.filter(u=>u.sensus==='ada').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><b>${U.length}</b><span>UNIT DI LANTAI 3</span></div>
+    <div class="stat"><b>${tercatat}</b><span>TERCATAT AKTIF DI SISTEM</span></div>
+    <div class="stat"><b>${adaToko}</b><span>TERBUKTI ADA TOKO DI LAPANGAN</span></div>
+    <div class="stat"><b>${hard.length}</b><span>BARIS SELISIH</span></div>`;
+  document.getElementById('recon').innerHTML=`Dari ${tercatat} unit yang tercatat aktif, ${tercatat-1} terbukti ada tokonya dan 1 unit ternyata kosong.
+    Di luar itu ada 3 unit yang ada tokonya tetapi tidak tercatat sama sekali. Ditambah 1 unit yang nama usahanya tidak cocok dengan kontrak,
+    seluruhnya menjadi ${hard.length} baris selisih.`;
+
+  const row=id=>{const c=CASES[id],e=EVIDENCE[id],sc=score(id);
+    return `<div class="row ${done[id]?'done':''}">
+      <button class="row-h"><span class="row-c">▸</span><span class="row-u">${id}</span>
+      <span class="row-k">${hideNames?'<span style="color:var(--mute)">nama disembunyikan</span>':esc(c.nama)}</span>
+      <span class="row-v">${c.nilai?jt(c.nilai):'—'}</span>
+      <span class="row-s ${sc>=8?'hi':''}">${e.length} SUMBER · SKOR ${sc}</span></button>
+      <div class="row-b"><h4>${esc(c.kat)}</h4><div class="row-w">${esc(c.w)}</div>
+        <div class="evid">${e.map(x=>`<span class="ev ${SRC[x[0]][2]}"><b>${SRC[x[0]][0]}</b>${esc(x[1])}<em>BOBOT ${SRC[x[0]][1]}</em></span>`).join('')}</div>
+        <div class="row-w" style="margin-bottom:10px">Terdeteksi ${c.det}${c.bln?` · periode terhitung ${c.bln} bulan × ${rp(c.sewa)}/bulan (tarif contoh)`:''}</div>
+        <div class="rowacts noprint"><button class="tbtn" data-act="pic" data-id="${id}">Tugaskan ke PIC pemilik</button>
+        <button class="tbtn" data-act="ok" data-id="${id}">${done[id]?'Batalkan tanda':'Tandai sudah dicek'}</button></div>
+      </div></div>`};
+  document.getElementById('hardList').innerHTML=hard.map(row).join('');
+  document.getElementById('softList').innerHTML=soft.map(row).join('');
+  document.querySelectorAll('.row-h').forEach(b=>b.onclick=()=>{
+    const r=b.closest('.row');r.classList.toggle('open');
+    r.querySelector('.row-c').textContent=r.classList.contains('open')?'▾':'▸'});
+  document.querySelectorAll('[data-act]').forEach(b=>b.onclick=e=>{e.stopPropagation();
+    if(b.dataset.act==='ok'){done[b.dataset.id]=!done[b.dataset.id];DB.set('done',done);render()}
+    else toast('Baris '+b.dataset.id+' dikirim ke PIC pemilik. Tidak melewati staf gedung.')});
+
+  /* masukan lapangan */
+  const rp_=reports(),nb=neighbors();
+  const feed=[...rp_.map(r=>({t:r.t,s:'LAPORAN PEMBELI',x:`${esc(r.nama)} — unit ${esc(r.unit)} · bukti: ${r.bukti==='struk'?'struk belanja':'foto papan nama'}`})),
+    ...nb.map(n=>({t:n.t,s:'KONFIRMASI TETANGGA',x:`Tenant ${n.dari} menyebut unit ${n.unit} sebagai "${esc(n.nama)}"`}))]
+    .sort((a,b)=>b.t-a.t).slice(0,12);
+  document.getElementById('feed').innerHTML=feed.length?feed.map(f=>
+    `<div class="ev s" style="margin-bottom:5px"><b>${f.s}</b>${f.x}
+     <em>${new Date(f.t).toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</em></div>`).join('')
+    :'<p class="empty-note">Belum ada masukan baru. Coba klaim kupon di halaman pengunjung atau kirim konfirmasi tetangga di portal tenant — hasilnya akan muncul di sini.</p>';
+
+  /* pencarian nihil */
+  document.getElementById('zero').innerHTML=zeroLog().slice().sort((a,b)=>b.n-a.n)
+    .map(z=>`<div class="zero ${z.fresh?'fresh':''}"><span class="zq">${esc(z.q)}</span><span class="zn">${z.n}× dicari</span></div>`).join('');
+}
+document.getElementById('expAll').onclick=()=>document.querySelectorAll('.row').forEach(r=>{
+  r.classList.add('open');r.querySelector('.row-c').textContent='▾'});
+document.getElementById('hideName').onclick=e=>{hideNames=!hideNames;
+  e.target.textContent=hideNames?'Tampilkan nama usaha':'Sembunyikan nama usaha';render()};
+render();
+addEventListener('focus',render);
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Konfigurasi Sistem — Lantai 3</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap" id="main"></div>
+<script src="assets/qrcode.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+document.getElementById('top').innerHTML=topbar({tag:'KONFIGURASI',
+  bar:'<b>MODE DEMO</b> · di sistem asli halaman ini wajib memakai autentikasi sungguhan, bukan PIN. Jangan bagikan tautannya.'});
+const main=document.getElementById('main');
+
+function gate(){
+  main.innerHTML=`<div class="gate"><h2>Masukkan PIN</h2>
+    <p>Halaman ini mengatur fitur yang tampil, nilai kupon, dan status toko. PIN peragaan: <b>1234</b>.</p>
+    <div class="field"><input id="pin" type="password" inputmode="numeric" placeholder="PIN"></div>
+    <button class="btn" id="go">Buka</button></div>`;
+  const t=()=>{if(document.getElementById('pin').value===cfg().pinSetup){DB.set('unlocked',1);render()}
+    else toast('PIN salah.')};
+  document.getElementById('go').onclick=t;
+  document.getElementById('pin').onkeydown=e=>{if(e.key==='Enter')t()};
+}
+
+const TOG=[
+ ['fKupon','Program kupon pembeli','Scan QR di kasir dan jalur klaim tanpa QR. Kalau dimatikan, seluruh bagian kupon hilang dari halaman pengunjung.'],
+ ['fPromo','Promo tenant','Tenant bisa memasang promo sendiri dan langsung tampil di direktori.'],
+ ['fTetangga','Konfirmasi tetangga','Pertanyaan verifikasi denah di portal tenant.'],
+ ['fPerforma','Laporan performa tenant','Jumlah dilihat, halaman dibuka, klik WhatsApp, dan kata kunci.'],
+ ['fArah','Petunjuk arah tertulis','Kalimat cara menuju kios di halaman toko.'],
+ ['fLogNihil','Log pencarian nihil','Mencatat kata yang dicari pengunjung tetapi tidak ditemukan.'],
+ ['fRekonsiliasi','Panel rekonsiliasi pengelola','Halaman selisih data okupansi. Matikan kalau belum ingin ditampilkan ke siapa pun.'],
+];
+
+function render(){
+  const c=cfg(),U=units();
+  main.innerHTML=`
+  <h1 style="font-size:24px;margin-bottom:6px">Konfigurasi sistem</h1>
+  <p class="admin-sub">Perubahan langsung berlaku di halaman pengunjung, portal tenant, dan panel pengelola.</p>
+
+  <div class="card"><div class="card-lbl">FITUR YANG DITAMPILKAN</div>
+    ${TOG.map(t=>`<div class="toggle"><div class="tl"><b>${t[1]}</b><span>${t[2]}</span></div>
+      <button class="sw ${c[t[0]]?'on':''}" data-tog="${t[0]}" aria-label="${t[1]}"></button></div>`).join('')}
+  </div>
+
+  <div class="card"><div class="card-lbl">ANGGARAN KUPON</div>
+    <p class="empty-note" style="margin-bottom:14px">Batas ini yang menjawab keberatan paling sering dari pemilik gedung: berapa maksimal biaya kupon per bulan.</p>
+    <div class="grid2" style="gap:12px">
+      <div class="field"><label for="kn">Nilai kupon belanja (Rp)</label><input id="kn" type="number" min="0" step="1000" value="${c.kuponNilai}"></div>
+      <div class="field"><label for="kh">Hadiah laporan toko baru (Rp)</label><input id="kh" type="number" min="0" step="1000" value="${c.hadiahLaporan}"></div>
+      <div class="field"><label for="kk">Kuota kupon per hari</label><input id="kk" type="number" min="0" value="${c.kuponKuotaHari}"></div>
+      <div class="field"><label for="kp">Maksimal per nomor per hari</label><input id="kp" type="number" min="1" value="${c.kuponPerNomor}"></div>
+      <div class="field"><label>Terpakai hari ini</label><input value="${c.kuponTerpakai}" disabled></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn alt auto" id="kSave">Simpan</button>
+      <button class="btn ghost auto" id="kReset">Nolkan pemakaian hari ini</button></div>
+    <p class="empty-note" style="font-size:12.5px;margin-top:12px">
+      Batas atas biaya kupon per bulan: <b id="kMax">${rp(c.kuponNilai*c.kuponKuotaHari*30)}</b> untuk satu lantai —
+      ini plafon, bukan perkiraan pemakaian. Hadiah laporan dibayar terpisah dan hanya setelah diverifikasi.</p>
+  </div>
+
+  <div class="card"><div class="card-lbl">KIOS, QR, DAN STATUS TAMPIL</div>
+    <div class="tblwrap"><table class="ktab">
+      <thead><tr><th>UNIT</th><th>NAMA</th><th>KONTRAK</th><th>QR</th><th>TAMPIL</th><th>TINDAKAN</th></tr></thead>
+      <tbody>${U.map(u=>{
+        const punyaKontrak=u.sis==='aktif';
+        return `<tr class="${u.nonaktif?'off':''}">
+        <td class="u">${u.u}</td>
+        <td>${esc(u.n||'—')}</td>
+        <td><span class="pill ${punyaKontrak?'ok':'no'}">${punyaKontrak?'AKTIF':u.sis.toUpperCase()}</span></td>
+        <td>${punyaKontrak?`<span class="pill ${u.qr==='aktif'?'ok':'warn'}">${u.qr==='aktif'?'AKTIF':'BELUM'}</span>`:'<span class="pill">—</span>'}</td>
+        <td><span class="pill ${u.nonaktif?'no':'ok'}">${u.nonaktif?'DISEMBUNYIKAN':'TAMPIL'}</span></td>
+        <td style="white-space:nowrap">
+          ${punyaKontrak?`<button class="mini" data-qr="${u.u}">${u.qr==='aktif'?'Terbitkan QR baru':'Lihat QR klaim'}</button>
+          <button class="mini ${u.nonaktif?'':'d'}" data-off="${u.u}">${u.nonaktif?'Tampilkan':'Sembunyikan'}</button>`:'—'}
+        </td></tr>`}).join('')}</tbody>
+    </table></div>
+    <p class="empty-note" style="font-size:12.5px;margin-top:12px">
+      <b>Terbitkan QR baru</b> mematikan QR lama dan mengembalikan kios ke tahap aktivasi — dipakai kalau tenant ganti nomor HP atau QR hilang.
+      <b>Sembunyikan</b> menghapus toko dari direktori tanpa menghapus datanya. Perhatikan: menyembunyikan toko yang sedang bermasalah membuat pemiliknya langsung tahu ada yang mengamati.</p>
+  </div>
+
+  <div class="card" id="qrCard" style="display:none"></div>
+
+  <div class="card"><div class="card-lbl">IDENTITAS & DATA</div>
+    <div class="grid2" style="gap:12px">
+      <div class="field"><label for="nm">Nama mall</label><input id="nm" value="${esc(c.namaMall)}"></div>
+      <div class="field"><label for="lt">Label lantai</label><input id="lt" value="${esc(c.lantai)}"></div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn alt auto" id="iSave">Simpan identitas</button>
+      <button class="btn danger auto" id="wipe">Kembalikan semua data ke awal</button></div>
+    <p class="empty-note" style="font-size:12.5px;margin-top:12px">${DB.ok
+      ? 'Data peragaan tersimpan di peramban ini saja. Perangkat lain punya salinannya sendiri.'
+      : 'Peramban ini memblokir penyimpanan, jadi perubahan hanya bertahan selama halaman terbuka.'}</p>
+  </div>`;
+
+  document.querySelectorAll('[data-tog]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.tog,v=!cfg()[k];setCfg({[k]:v});b.classList.toggle('on',v);
+    toast((TOG.find(t=>t[0]===k)[1])+(v?' dinyalakan.':' dimatikan.'))});
+  const $=id=>document.getElementById(id);
+  const hitung=()=>$('kMax').textContent=rp((+$('kn').value||0)*(+$('kk').value||0)*30);
+  ['kn','kk'].forEach(id=>$(id).oninput=hitung);
+  $('kSave').onclick=()=>{setCfg({kuponNilai:+$('kn').value||0,hadiahLaporan:+$('kh').value||0,
+    kuponKuotaHari:+$('kk').value||0,kuponPerNomor:+$('kp').value||1});
+    toast('Anggaran kupon disimpan.')};
+  $('kReset').onclick=()=>{setCfg({kuponTerpakai:0});render();toast('Pemakaian kupon hari ini dinolkan.')};
+  $('iSave').onclick=()=>{setCfg({namaMall:$('nm').value.trim()||'Mall',lantai:$('lt').value.trim()||'LANTAI 3'});
+    location.reload()};
+  $('wipe').onclick=()=>{if(confirm('Kembalikan seluruh data peragaan ke kondisi awal?')){resetAll();location.reload()}};
+
+  document.querySelectorAll('[data-off]').forEach(b=>b.onclick=()=>{
+    const u=unit(b.dataset.off);patchUnit(u.u,x=>x.nonaktif=!x.nonaktif);render();
+    toast(u.nonaktif?`${u.u} kembali tampil di direktori.`:`${u.u} disembunyikan dari direktori.`)});
+  document.querySelectorAll('[data-qr]').forEach(b=>b.onclick=()=>{
+    const code=b.dataset.qr,u=unit(code);
+    if(u.qr==='aktif'&&confirm('Terbitkan QR baru untuk '+code+'? QR lama langsung tidak berlaku.')){
+      patchUnit(code,x=>{x.qr='belum';x.scan=0});render()}
+    showQR(code)});
+}
+
+function showQR(code){
+  const u=unit(code),link=baseURL()+'tenant.html?kios='+code;
+  const el=document.getElementById('qrCard');
+  el.style.display='';
+  el.innerHTML=`<div class="card-lbl">QR UNTUK ${code}</div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+      <div style="width:180px;flex:none;background:#fff;padding:8px">${qrSvg(link,6)}</div>
+      <div style="flex:1;min-width:220px">
+        <h3 style="font-size:18px;margin-bottom:6px">${esc(u.n||code)}</h3>
+        <p class="empty-note" style="margin-bottom:10px">${u.qr==='belum'
+          ? 'Status: <b>tiket aktivasi</b>. Serahkan bersama surat sewa. Setelah diaktivasi, QR yang sama menjadi QR toko di kasir.'
+          : 'Status: <b>QR toko aktif</b>. Pajang di kasir untuk klaim kupon pembeli.'}</p>
+        <p class="mono" style="font-size:11px;color:var(--mute);word-break:break-all;margin-bottom:12px">${esc(link)}</p>
+        <button class="tbtn" onclick="window.print()">Cetak</button>
+      </div></div>`;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+if(cfg().gateSetup&&!DB.get('unlocked',0))gate();else render();
+</script>
+</body>
+</html>

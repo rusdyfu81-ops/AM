@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Tenant — Lantai 3</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap narrow" id="main"></div>
+<script src="assets/qrcode.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const C=cfg();
+let kios=qs('kios');
+if(!kios){const f=units().find(u=>u.sis==='aktif');kios=f?f.u:'L3-06'}
+document.getElementById('top').innerHTML=topbar({tag:'PORTAL TENANT',
+  bar:'<b>MODE DEMO</b> · di sistem asli, tenant hanya bisa membuka toko miliknya sendiri setelah memindai QR dan memasukkan OTP ke nomor WhatsApp di kontrak.'});
+
+const main=document.getElementById('main');
+function render(){
+  const u=unit(kios);
+  if(!u||u.sis!=='aktif'){main.innerHTML=`<div class="card"><h2>Kios ini belum punya kontrak aktif</h2>
+    <p class="empty-note" style="margin-top:8px">Unit <span class="mono">${esc(kios)}</span> tidak tercatat sebagai tenant resmi. Kalau Anda merasa ini keliru, hubungi PIC pengelola di 021-5500-3300.</p>
+    <a class="btn" style="margin-top:14px" href="index.html">Buka direktori pengunjung</a></div>`;return}
+  if(u.nonaktif){main.innerHTML=`<div class="card"><h2>Halaman toko sedang dinonaktifkan</h2>
+    <p class="empty-note" style="margin-top:8px">Unit <span class="mono">${u.u}</span> sementara tidak tampil di direktori. Silakan hubungi PIC pengelola.</p>
+    <a class="btn" style="margin-top:14px" href="index.html">Buka direktori pengunjung</a></div>`;return}
+
+  const act=units().filter(isLive);
+  const avg=f=>Math.round(act.reduce((s,x)=>s+x[f],0)/act.length);
+  const cmp=(v,a)=>{const d=Math.round((v-a)/a*100);
+    return `<em class="${d>=0?'up':'down'}">${d>=0?'▲ '+d:'▼ '+Math.abs(d)}% vs rata-rata lantai</em>`};
+  const link=baseURL()+'tenant.html?kios='+u.u;
+
+  let qrBlock;
+  if(u.qr==='belum'){
+    qrBlock=`<div class="qrhold locked">${qrSvg(link)}</div><div class="qrinfo">
+      <span class="qrstate s1">TAHAP 1 · BELUM DIAKTIVASI</span>
+      <h3>QR ini masih berupa tiket aktivasi</h3>
+      <p>QR diterbitkan sistem bersama surat sewa resmi Anda. Scan sekali, lalu masukkan kode OTP yang dikirim ke nomor WhatsApp yang tertulis di kontrak. Setelah itu QR ini berubah fungsi menjadi QR toko, dan hak ubah data melekat pada nomor tersebut — bukan lagi pada kertasnya.</p>
+      <button class="qrbtn" id="act">Simulasikan aktivasi</button></div>`;
+  }else{
+    qrBlock=`<div class="qrhold">${qrSvg(link)}</div><div class="qrinfo">
+      <span class="qrstate s2">TAHAP 2 · AKTIF SEBAGAI QR TOKO</span>
+      <h3>Pajang QR ini di kasir</h3>
+      <p>Pembeli memindainya untuk klaim kupon. QR ini tidak lagi membuka akses ubah data — memfotonya pun tidak berguna bagi orang lain. Ganti nomor HP hanya bisa lewat PIC pengelola.</p>
+      <div class="qrmeta"><div><b>${u.scan.toLocaleString('id')}</b><span>DIPINDAI PEMBELI</span></div>
+      <div><b>${u.sejak}</b><span>KONTRAK SEJAK</span></div><div><b>${u.akhir}</b><span>BERLAKU SAMPAI</span></div></div>
+      <button class="qrbtn g" id="reprint">Minta cetak ulang</button></div>`;
+  }
+
+  const side=['sebelah kiri','sebelah kanan'];
+  const nbRows=u.nb.map((code,j)=>code?`<div class="nb"><span><span class="nbu">${code}</span> · ${side[j]}</span>
+      <input type="text" placeholder="Nama toko di sebelah…" data-nb="${code}"></div>`:
+      `<div class="nb"><span><span class="nbu">—</span> · ${side[j]}</span><span class="empty-note" style="font-size:12px">Koridor / fasilitas</span></div>`).join('');
+
+  main.innerHTML=`
+  <div class="t-head">
+    <div><div class="t-title">${esc(u.n)}</div><div class="t-sub">UNIT ${u.u} · ${esc(C.lantai)} · ${esc(u.kat).toUpperCase()}</div></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <a class="tbtn" href="index.html">Lihat direktori pengunjung</a>
+      <button class="tier-badge" id="tier">${{dasar:'TERDAFTAR',aktif:'AKTIF',sorotan:'SOROTAN'}[u.tier]} ⓘ</button></div>
+  </div>
+  <div class="qcard">${qrBlock}</div>
+  <div class="grid2" style="margin-bottom:16px">
+    ${C.fPerforma?`<div class="card">
+      <div class="card-lbl">PERFORMA 30 HARI · DIBANDING RATA-RATA LANTAI</div>
+      <div class="metric">
+        <div><b>${u.views.toLocaleString('id')}</b><span>DILIHAT</span>${cmp(u.views,avg('views'))}</div>
+        <div><b>${u.clicks.toLocaleString('id')}</b><span>HALAMAN DIBUKA</span>${cmp(u.clicks,avg('clicks'))}</div>
+        <div><b>${u.wa_c}</b><span>KLIK WHATSAPP</span>${cmp(u.wa_c,avg('wa_c'))}</div></div>
+      <div class="card-lbl" style="margin-bottom:6px">KATA KUNCI YANG MEMBAWA ORANG KE TOKO ANDA</div>
+      ${u.kws.map(k=>`<div class="kw"><span>${esc(k[0])}</span><b>${k[1]}×</b></div>`).join('')}
+    </div>`:''}
+    ${C.fTetangga?`<div class="card">
+      <div class="card-lbl">BANTU KAMI PASTIKAN DENAH SUDAH BENAR</div>
+      <p class="empty-note" style="margin-bottom:12px">Siapa tetangga kiri dan kanan kios Anda? Ini membantu pengunjung menemukan lokasi dengan tepat.</p>
+      ${nbRows}
+      <button class="btn ghost" style="margin-top:12px" id="nbSave">Kirim konfirmasi</button>
+    </div>`:''}
+  </div>
+  ${C.fPromo?`<div class="card">
+    <div class="card-lbl">PASANG PROMO — LANGSUNG TAMPIL DI DIREKTORI</div>
+    <div class="grid2" style="gap:12px">
+      <div class="field" style="margin:0"><label for="pTxt">Teks promo (maks. 60 huruf, tanpa nomor telepon)</label>
+        <input id="pTxt" type="text" maxlength="60" value="${esc(u.promo||'')}" placeholder="Contoh: Diskon 20% jam 14.00–17.00"></div>
+      <div class="grid2" style="gap:8px">
+        <div class="field" style="margin:0"><label for="pUntil">Berlaku sampai</label><input id="pUntil" type="date" value="${u.until||''}"></div>
+        <div style="display:flex;gap:7px;align-items:flex-end">
+          <button class="btn alt auto" id="pSave" style="flex:1">Tayangkan</button>
+          <button class="btn ghost auto" id="pClear">Hapus</button></div>
+      </div></div>
+    <p class="empty-note" style="font-size:12px;margin-top:10px">Promo berhenti tayang otomatis pada tanggal berakhir. Teks yang memuat nomor telepon akan ditolak sistem.</p>
+  </div>`:''}`;
+
+  const $=id=>document.getElementById(id);
+  if($('act'))$('act').onclick=()=>{patchUnit(u.u,x=>{x.qr='aktif';x.scan=0});render();
+    toast('QR aktif. Sejak ini QR yang sama menjadi QR toko untuk kupon pembeli.')};
+  if($('reprint'))$('reprint').onclick=()=>toast('Permintaan cetak ulang dikirim ke PIC pengelola.');
+  $('tier').onclick=()=>toast(TIER_TXT[u.tier]);
+  if($('nbSave'))$('nbSave').onclick=()=>{
+    const f=[...document.querySelectorAll('[data-nb]')].filter(i=>i.value.trim());
+    if(!f.length){toast('Isi dulu nama toko di sebelah kiri atau kanan Anda.');return}
+    f.forEach(i=>addNeighbor({dari:u.u,unit:i.dataset.nb,nama:i.value.trim()}));
+    toast('Terima kasih. Denah lantai 3 diperbarui.')};
+  if($('pSave'))$('pSave').onclick=()=>{
+    const v=$('pTxt').value.trim();
+    if(/(08|\+62)\d{6,}/.test(v.replace(/[-.\s]/g,''))){toast('Teks promo tidak boleh memuat nomor telepon.');return}
+    patchUnit(u.u,x=>{x.promo=v;x.until=$('pUntil').value});render();
+    toast(v?'Promo tayang. Cek direktori pengunjung.':'Promo dihapus.')};
+  if($('pClear'))$('pClear').onclick=()=>{patchUnit(u.u,x=>{x.promo='';x.until=''});render();toast('Promo dihapus.')};
+}
+render();
+</script>
+</body>
+</html>

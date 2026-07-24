@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pusat Peragaan — Direktori Mall</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="top"></div>
+<div class="wrap">
+  <h1 style="font-size:24px;margin-bottom:6px">Pusat peragaan</h1>
+  <p class="admin-sub">Halaman ini hanya untuk Anda saat presentasi. Cetak QR di bawah, lalu bagikan kertasnya ke peserta.</p>
+
+  <div class="sec-h">HALAMAN</div>
+  <div class="navgrid">
+    <a href="index.html"><b>Pengunjung</b><span>Direktori toko, denah, dan kupon. Ini yang dibuka QR pintu masuk.</span></a>
+    <a href="tenant.html?kios=L3-06"><b>Portal tenant</b><span>Halaman pemilik toko. Dibuka lewat QR masing-masing kios.</span></a>
+    <a href="pengelola.html"><b>Pengelola</b><span>Rekonsiliasi okupansi. Jangan dibuka sebelum bagian pemasaran selesai.</span></a>
+    <a href="setup.html"><b>Konfigurasi</b><span>Nyalakan/matikan fitur, atur anggaran kupon, kelola QR dan status toko.</span></a>
+  </div>
+
+  <div class="sec-h">QR SIAP CETAK</div>
+  <p class="empty-note noprint" style="margin-bottom:14px">Tiga QR toko untuk tiga peserta, satu QR pintu masuk. Tekan Ctrl+P untuk mencetak halaman ini.</p>
+  <div class="admin-tools noprint">
+    <button class="tbtn" onclick="window.print()">Cetak QR</button>
+    <select id="pick" class="tbtn" style="padding:8px"></select>
+    <button class="tbtn" id="add">Tambah QR toko</button>
+  </div>
+  <div class="qgrid" id="qgrid"></div>
+
+  <div class="sec-h noprint">CATATAN PENTING</div>
+  <div class="card noprint">
+    <p class="empty-note" style="margin-bottom:10px"><b>Data peragaan tersimpan per perangkat.</b>
+    Kalau peserta memindai QR dengan HP masing-masing, setiap HP memulai dari data awal yang sama, tetapi perubahan di satu HP tidak muncul di HP lain.
+    Untuk memperagakan aliran data antarhalaman — misalnya laporan pembeli yang muncul di panel pengelola — gunakan satu perangkat dengan beberapa tab.</p>
+    <p class="empty-note"><b>Sebelum tamu datang</b>, buka Konfigurasi lalu tekan “Kembalikan semua data ke awal” supaya angka bersih.</p>
+  </div>
+</div>
+<script src="assets/qrcode.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+document.getElementById('top').innerHTML=topbar({tag:'PERAGAAN'});
+const DEFAULT_KIOS=['L3-06','L3-09','L3-13'];
+let list=DB.get('demoQR',DEFAULT_KIOS);
+
+const pick=document.getElementById('pick');
+units().filter(u=>u.sis==='aktif').forEach(u=>pick.innerHTML+=`<option value="${u.u}">${u.u} · ${u.n}</option>`);
+
+function render(){
+  const items=[{role:'QR PINTU MASUK',nama:'Direktori '+cfg().namaMall,link:baseURL()+'index.html',
+    note:'Tempel di pintu masuk dan lift. Pengunjung memindai, langsung membuka direktori.'}];
+  list.forEach(code=>{const u=unit(code);if(!u||u.sis!=='aktif')return;
+    items.push({role:'QR TOKO · '+code,nama:u.n,link:baseURL()+'tenant.html?kios='+code,
+      note:u.qr==='belum'?'Belum diaktivasi — cocok untuk memperagakan tahap aktivasi.':'Sudah aktif sebagai QR toko.',code:code})});
+  document.getElementById('qgrid').innerHTML=items.map(i=>`<div class="qitem">
+    <span class="role">${i.role}</span>
+    <div class="qsvg">${qrSvg(i.link,6)}</div>
+    <h4>${esc(i.nama)}</h4>
+    <p>${esc(i.link)}</p>
+    <p style="margin-top:8px;font-family:var(--sans);font-size:12px;color:var(--mute)">${i.note}</p>
+    ${i.code?`<button class="mini noprint" style="margin-top:10px" data-rm="${i.code}">Hapus dari daftar</button>`:''}
+  </div>`).join('');
+  document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{
+    list=list.filter(c=>c!==b.dataset.rm);DB.set('demoQR',list);render()});
+}
+document.getElementById('add').onclick=()=>{
+  const v=pick.value;if(list.indexOf(v)>-1){toast('Sudah ada di daftar.');return}
+  list.push(v);DB.set('demoQR',list);render();toast('QR '+v+' ditambahkan.')};
+render();
+</script>
+</body>
+</html>

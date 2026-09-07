@@ -1,146 +1,618 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Direktori Toko — Lantai 3</title>
-<link rel="stylesheet" href="assets/style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Toko Chan Kok — Pesan Mandiri</title>
+<meta name="description" content="Mockup lima layar sistem pesan mandiri toko bahan bangunan: kiosk tablet, kasir, papan gudang, layar antrian, dan import item Accurate." />
+<style>
+  img { max-width: 100%; height: auto; }
+  [hidden] { display: none !important; }
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --ground: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #f5f7f9;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --ink: #1e293b;
+    --ink-2: #556274;
+    --ink-3: #7c8ba1;
+    --brand: #1d4ed8;
+    --brand-ink: #ffffff;
+    --brand-soft: #e2ebfb;
+    --paid: #15803d;
+    --paid-soft: #dcf1e3;
+    --packing: #6d28d9;
+    --packing-soft: #ebe3fb;
+    --stale: #b45309;
+    --stale-soft: #f8ebd6;
+    --problem: #dc2626;
+    --problem-soft: #f9dedd;
+    --ready: #0d9488;
+    --ready-soft: #d3efec;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(15,23,42,.06), 0 8px 24px -12px rgba(15,23,42,.16);
+    --font-display: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f151d;
+      --surface: #1a222e;
+      --surface-2: #212b39;
+      --line: #313d4d;
+      --line-strong: #44536a;
+      --ink: #e8edf4;
+      --ink-2: #aab7c7;
+      --ink-3: #7f8da0;
+      --brand: #6f9bf2;
+      --brand-ink: #0b1626;
+      --brand-soft: #1d2c45;
+      --paid: #57c882;
+      --paid-soft: #16321f;
+      --packing: #b295ec;
+      --packing-soft: #271c3d;
+      --stale: #e0a94e;
+      --stale-soft: #3a2c12;
+      --problem: #f0837c;
+      --problem-soft: #3c1e1d;
+      --ready: #52c6b8;
+      --ready-soft: #12312d;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0f151d;
+    --surface: #1a222e;
+    --surface-2: #212b39;
+    --line: #313d4d;
+    --line-strong: #44536a;
+    --ink: #e8edf4;
+    --ink-2: #aab7c7;
+    --ink-3: #7f8da0;
+    --brand: #6f9bf2;
+    --brand-ink: #0b1626;
+    --brand-soft: #1d2c45;
+    --paid: #57c882;
+    --paid-soft: #16321f;
+    --packing: #b295ec;
+    --packing-soft: #271c3d;
+    --stale: #e0a94e;
+    --stale-soft: #3a2c12;
+    --problem: #f0837c;
+    --problem-soft: #3c1e1d;
+    --ready: #52c6b8;
+    --ready-soft: #12312d;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -14px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+  .mono { font-family: var(--font-mono); }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 72px; }
+
+  header.top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 18px; }
+  header.top h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
+  header.top .sub { color: var(--ink-2); font-size: .95rem; }
+
+  nav.screens { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  nav.screens button {
+    font-family: var(--font-body);
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--ink-2);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  nav.screens button .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--ink-3); }
+  nav.screens button[aria-selected="true"] {
+    color: var(--brand-ink);
+    background: var(--brand);
+    border-color: var(--brand);
+  }
+  nav.screens button[aria-selected="true"] .dot { background: var(--brand-ink); }
+  nav.screens button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  .device { border: 1px solid var(--line-strong); border-radius: 16px; background: var(--surface-2); box-shadow: var(--shadow); overflow: hidden; }
+  .device-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 14px; background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    font-size: .78rem; color: var(--ink-3);
+    font-family: var(--font-mono);
+  }
+  .device-bar .pill { margin-left: auto; text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); }
+  .device-bar .live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: .7rem; letter-spacing: .04em; text-transform: uppercase; color: var(--paid); }
+  .device-bar .live + .pill { margin-left: 10px; }
+  .device-bar .live .ld { width: 8px; height: 8px; border-radius: 999px; background: var(--paid); box-shadow: 0 0 0 0 color-mix(in srgb, var(--paid) 60%, transparent); animation: livePulse 2s infinite; }
+  @keyframes livePulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--paid) 55%, transparent); } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .device-body { padding: 18px; }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 600; padding: 3px 8px; border-radius: 999px; letter-spacing: .01em; }
+  .b-paid { background: var(--paid-soft); color: var(--paid); }
+  .b-packing { background: var(--packing-soft); color: var(--packing); }
+  .b-stale { background: var(--stale-soft); color: var(--stale); }
+  .b-problem { background: var(--problem-soft); color: var(--problem); }
+  .b-ready { background: var(--ready-soft); color: var(--ready); }
+  .b-wait { background: var(--brand-soft); color: var(--brand); }
+
+  .btn { font-family: var(--font-body); font-weight: 600; font-size: .85rem; border-radius: 8px; padding: 9px 14px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .btn-primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .btn-paid { background: var(--paid); border-color: var(--paid); color: #fff; }
+  .btn-ready { background: var(--ready); border-color: var(--ready); color: #fff; }
+  .btn-ghost { background: transparent; }
+  .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* ---------- KIOSK ---------- */
+  .kiosk { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+  .kiosk h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; }
+  .cats { display: flex; gap: 7px; margin: 12px 0 14px; flex-wrap: wrap; }
+  .cats span { font-size: .8rem; font-weight: 500; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface); }
+  .cats span.on { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .prod { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px; display: flex; flex-direction: column; gap: 3px; }
+  .prod .thumb { aspect-ratio: 4/3; border-radius: 6px; background: linear-gradient(135deg, var(--surface-2), var(--brand-soft)); margin-bottom: 6px; }
+  .prod .code { font-family: var(--font-mono); font-size: .68rem; color: var(--ink-3); }
+  .prod .nm { font-weight: 600; font-size: .84rem; line-height: 1.25; }
+  .prod .pr { font-family: var(--font-mono); font-size: .82rem; color: var(--ink-2); margin-top: 2px; }
+  .prod.out { opacity: .55; }
+  .prod.out .thumb { background: repeating-linear-gradient(45deg, var(--surface-2), var(--surface-2) 6px, var(--line) 6px, var(--line) 12px); }
+  .prod { cursor: pointer; }
+  .prod .add { margin-top: 8px; min-height: 44px; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 600; text-align: center; border-radius: 8px; background: var(--brand); color: var(--brand-ink); }
+  .prod.out { cursor: not-allowed; }
+  .prod.out .add { background: var(--surface-2); color: var(--ink-3); }
+  .cart { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px; align-self: start; position: sticky; top: 10px; }
+  .cart h3 { font-size: .95rem; font-weight: 700; margin-bottom: 10px; }
+  .cart .ln { display: flex; justify-content: space-between; gap: 8px; font-size: .82rem; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .cart .ln .q { color: var(--ink-3); font-family: var(--font-mono); }
+  .cart .sums { font-family: var(--font-mono); font-size: .8rem; margin: 10px 0; }
+  .cart .sums div { display: flex; justify-content: space-between; padding: 2px 0; color: var(--ink-2); }
+  .cart .sums .tot { font-weight: 700; font-size: .95rem; color: var(--ink); margin-top: 4px; }
+  .cart .btn-primary { width: 100%; }
+  .ticket { margin-top: 12px; border: 1px dashed var(--line-strong); border-radius: 8px; padding: 10px; font-family: var(--font-mono); font-size: .72rem; color: var(--ink-2); background: var(--surface-2); white-space: pre-line; }
+
+  /* ---------- KASIR ---------- */
+  .kasir { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tabs span { font-size: .82rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; color: var(--ink-2); border: 1px solid var(--line); }
+  .tabs span.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .list-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  table.list { width: 100%; border-collapse: collapse; font-size: .84rem; font-variant-numeric: tabular-nums; }
+  table.list th { position: sticky; top: 0; background: var(--surface-2); text-align: left; font-weight: 600; color: var(--ink-3); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  table.list td { padding: 0 12px; height: 40px; border-bottom: 1px solid var(--line); }
+  table.list tbody tr:last-child td { border-bottom: 0; }
+  table.list tbody tr { cursor: pointer; }
+  table.list tbody tr:hover td { background: var(--surface-2); }
+  table.list tr.sel td { background: var(--brand-soft); box-shadow: inset 3px 0 0 var(--brand); }
+  table.list .mono { font-size: .8rem; }
+  .panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 16px; align-self: start; }
+  .panel h3 { font-size: 1rem; font-weight: 700; }
+  .panel .row { display: flex; justify-content: space-between; gap: 10px; font-size: .84rem; padding: 7px 0; border-bottom: 1px solid var(--line); }
+  .panel .row .q { color: var(--ink-3); font-family: var(--font-mono); }
+  .panel .sums { font-family: var(--font-mono); margin: 10px 0; }
+  .panel .sums div { display: flex; justify-content: space-between; padding: 3px 0; font-size: .85rem; color: var(--ink-2); }
+  .panel .sums .grand { font-weight: 700; font-size: 1.1rem; color: var(--ink); margin-top: 4px; }
+  .panel .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .hint { font-size: .76rem; color: var(--ink-3); margin-top: 10px; }
+
+  /* ---------- GUDANG ---------- */
+  .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .col h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); margin-bottom: 10px; }
+  .job { border: 1px solid var(--line); border-left: 4px solid var(--line-strong); border-radius: 8px; background: var(--surface); padding: 12px; margin-bottom: 10px; }
+  .job.p { border-left-color: var(--packing); }
+  .job.r { border-left-color: var(--ready); }
+  .job.warn { border-left-color: var(--problem); background: var(--problem-soft); }
+  .job .qn { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; line-height: 1; letter-spacing: -0.02em; }
+  .job .meta { display: flex; align-items: center; gap: 8px; margin: 6px 0 10px; font-size: .78rem; color: var(--ink-2); }
+  .job .items { font-size: .78rem; color: var(--ink-2); margin-bottom: 10px; }
+  .job .items .mono { font-size: .72rem; color: var(--ink-3); }
+  .job .btn { width: 100%; font-size: .8rem; padding: 7px; }
+
+  /* ---------- DISPLAY ---------- */
+  .antrian { background: #0d1512; border-radius: 12px; padding: 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; color: #eaf0ed; }
+  .antrian .side h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: .12em; color: #8fa8a0; margin-bottom: 16px; text-align: center; }
+  .antrian .nums { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .antrian .n { font-family: var(--font-display); font-weight: 700; font-size: 2.6rem; padding: 10px 20px; border-radius: 10px; background: #17231f; color: #cfe0da; min-width: 96px; text-align: center; letter-spacing: -0.02em; }
+  .antrian .side.ready .n { background: var(--ready); color: #04120e; }
+  .antrian .side.ready .n.new { animation: numPop 1.6s ease-in-out infinite; }
+  @keyframes numPop { 0%, 100% { box-shadow: 0 0 0 0 rgba(127,240,216,.9); } 50% { box-shadow: 0 0 0 8px rgba(127,240,216,0); } }
+  .antrian .divider { width: 1px; background: #24322d; }
+
+  /* ---------- ADMIN ---------- */
+  .admin { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+  .drop { border: 1.5px dashed var(--line-strong); border-radius: var(--radius); padding: 16px; display: flex; gap: 14px; background: var(--surface); margin-bottom: 12px; align-items: center; }
+  .drop .ic { width: 44px; height: 44px; border-radius: 8px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; font-family: var(--font-mono); font-weight: 600; font-size: .64rem; flex: none; }
+  .drop .t { font-weight: 600; font-size: .88rem; }
+  .drop .d { font-size: .76rem; color: var(--ink-3); font-family: var(--font-mono); }
+  .preview { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+  .preview .ph { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: .8rem; font-weight: 600; display:flex; justify-content: space-between; align-items:center;}
+  .preview table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+  .preview td { padding: 9px 14px; border-bottom: 1px solid var(--line); }
+  .preview td.mono { font-family: var(--font-mono); font-size: .74rem; }
+  .preview td.delta-pos { font-family: var(--font-mono); color: var(--paid); font-weight: 600; }
+  .preview td.delta-new { font-family: var(--font-mono); color: var(--brand); font-weight: 600; }
+  .preview td.delta-warn { font-family: var(--font-mono); color: var(--stale); font-weight: 600; }
+  .hist { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px; align-self: start; }
+  .hist h3 { font-size: .9rem; font-weight: 700; margin-bottom: 10px; }
+  .hist .h { font-size: .8rem; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  .hist .h .mono { display: block; color: var(--ink-3); font-size: .72rem; }
+
+  /* ---------- LAPORAN ---------- */
+  .rep-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; font-size: .82rem; }
+  .rep-bar .seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .rep-bar .seg span { padding: 6px 12px; color: var(--ink-2); border-right: 1px solid var(--line); }
+  .rep-bar .seg span:last-child { border-right: 0; }
+  .rep-bar .seg span.on { background: var(--brand); color: var(--brand-ink); }
+  .rep-bar .date { margin-left: auto; font-family: var(--font-mono); color: var(--ink-3); }
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 14px; }
+  .kpi .k { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+  .kpi .v { font-family: var(--font-mono); font-size: 1.3rem; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; }
+  .kpi .d { font-size: .72rem; color: var(--ink-3); margin-top: 2px; }
+  .rep-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+  .rep-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: hidden; align-self: start; }
+  .rep-card h3 { font-size: .82rem; font-weight: 700; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .rep-card table { width: 100%; border-collapse: collapse; font-size: .82rem; font-variant-numeric: tabular-nums; }
+  .rep-card th { text-align: left; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); font-weight: 600; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+  .rep-card td { padding: 0 14px; height: 36px; border-bottom: 1px solid var(--line); }
+  .rep-card tr:last-child td { border-bottom: 0; }
+  .rep-card td.num { text-align: right; font-family: var(--font-mono); }
+  .hours { display: flex; align-items: flex-end; gap: 5px; height: 120px; padding: 14px; }
+  .hours .hr { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .hours .hr .bar { width: 100%; background: var(--brand); border-radius: 3px 3px 0 0; min-height: 3px; }
+  .hours .hr .lbl { font-size: .6rem; color: var(--ink-3); font-family: var(--font-mono); }
+  .rep-foot { font-size: .72rem; color: var(--ink-3); margin-top: 14px; padding: 10px 12px; background: var(--surface-2); border-radius: 8px; }
+
+  @media (max-width: 860px) {
+    .kiosk, .kasir, .admin { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .rep-grid { grid-template-columns: 1fr; }
+    .board { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .antrian { grid-template-columns: 1fr; }
+    .antrian .divider { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
 </head>
 <body>
-<div id="top"></div>
-<div class="shell">
-  <section class="plan-card">
-    <div class="plan-head">
-      <div><div class="plan-title">Denah Lantai 3</div><div class="plan-sub">200 UNIT · 7 ZONA</div></div>
-      <div class="legend">
-        <span class="lg"><i style="background:#E9B429"></i>KULINER</span>
-        <span class="lg"><i style="background:#2F8F82"></i>RITEL</span>
-        <span class="lg"><i style="background:#7C6BD6"></i>JASA</span>
-        <span class="lg"><i style="background:#1E4A50;border:1px dashed rgba(241,238,229,.35)"></i>KOSONG</span>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Toko Chan Kok — Pesan Mandiri</h1>
+    <span class="sub">Mockup · toko bahan bangunan</span>
+  </header>
+
+  <nav class="screens" role="tablist" aria-label="Pilih layar">
+    <button role="tab" aria-selected="true" data-t="kiosk"><span class="dot"></span>Kiosk · Tablet</button>
+    <button role="tab" aria-selected="false" data-t="kasir"><span class="dot"></span>Kasir · Desktop</button>
+    <button role="tab" aria-selected="false" data-t="gudang"><span class="dot"></span>Papan Gudang · TV</button>
+    <button role="tab" aria-selected="false" data-t="display"><span class="dot"></span>Layar Antrian · TV</button>
+    <button role="tab" aria-selected="false" data-t="admin"><span class="dot"></span>Import Item · Admin</button>
+    <button role="tab" aria-selected="false" data-t="laporan"><span class="dot"></span>Laporan · Admin</button>
+  </nav>
+
+  <!-- ============ KIOSK ============ -->
+  <section data-s="kiosk">
+    <div class="device">
+      <div class="device-bar">tablet · /  <span class="pill">mode kiosk</span></div>
+      <div class="device-body">
+        <div class="kiosk">
+          <div>
+            <h2>Pilih Barang</h2>
+            <div class="cats">
+              <span>Semua</span><span class="on">HPL &amp; Edging</span><span>Board</span><span>PVC Sheet</span><span>Hardware · Engsel</span><span>Hardware Lainnya</span><span>Perlengkapan Rumah</span>
+            </div>
+            <div class="grid">
+              <div class="prod"><div class="thumb"></div><span class="code">29005</span><span class="nm">EDG 1X55MM, DARK BLUE / 1007</span><span class="pr">Rp 8.500 / M</span><div class="add">+ Tambah</div></div>
+              <div class="prod"><div class="thumb"></div><span class="code">37308</span><span class="nm">F.ALMOND CEDAR / 2805 SX2</span><span class="pr">Rp 240.000 / LB</span><div class="add">+ Tambah</div></div>
+              <div class="prod"><div class="thumb"></div><span class="code">13001</span><span class="nm">ACRYLIC 3 MM BENING</span><span class="pr">Rp 185.000 / LB</span><div class="add">+ Tambah</div></div>
+              <div class="prod"><div class="thumb"></div><span class="code">25032</span><span class="nm">D.LOCAL PVC SHEET ABU MUDA / 5013</span><span class="pr">Rp 95.000 / M</span><div class="add">+ Tambah</div></div>
+              <div class="prod"><div class="thumb"></div><span class="code">34044</span><span class="nm">E.KACA PIVOT T96L LURUS</span><span class="pr">Rp 68.000 / PC</span><div class="add">+ Tambah</div></div>
+              <div class="prod out"><div class="thumb"></div><span class="code">21000</span><span class="nm">C.DEMPUL SANPOLAC BESAR</span><span class="pr">Rp 210.000 / GALON</span><div class="add">Stok Habis</div></div>
+            </div>
+          </div>
+          <div class="cart">
+            <h3>Keranjang</h3>
+            <div class="ln"><span><span class="q">2 LB</span> · Acrylic 3mm Bening</span><span class="mono">370.000</span></div>
+            <div class="ln"><span><span class="q">6 M</span> · PVC Sheet Abu Muda</span><span class="mono">570.000</span></div>
+            <div class="ln"><span><span class="q">1 SET</span> · Door Closer Tanam</span><span class="mono">320.000</span></div>
+            <div class="sums">
+              <div class="tot"><span>Total</span><span>Rp 1.260.000</span></div>
+              <div><span>Termasuk PPN 12%</span><span>135.000</span></div>
+            </div>
+            <button class="btn btn-primary">Checkout</button>
+            <div class="ticket">— TIKET PESANAN —
+Kode: T-20260907-018
+3 item · Total Rp 1.260.000
+Belum bayar.
+Tunjukkan kode ini ke kasir.
+(nomor antrian terbit saat lunas)</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="zonebar" id="zonebar"></div>
-    <div class="viewtog"><button data-pv="plan">DENAH</button><button data-pv="list">DAFTAR</button></div>
-    <div class="plan" id="plan"></div>
-    <div id="planList"></div>
   </section>
-  <section class="panel">
-    <div class="card" id="detail"></div>
-    <div class="card"><div class="card-lbl" id="listlbl">SEMUA TOKO DI LANTAI INI</div><div class="results" id="results"></div></div>
-    <div class="reward" id="reward"></div>
+
+  <!-- ============ KASIR ============ -->
+  <section data-s="kasir" hidden>
+    <div class="device">
+      <div class="device-bar">desktop · /kasir  <span class="pill">PIN kasir</span></div>
+      <div class="device-body">
+        <div class="kasir">
+          <div>
+            <div class="tabs"><span class="on">Belum Bayar · 4</span><span>Siap Diambil · 2</span></div>
+            <div class="list-wrap">
+            <table class="list">
+              <thead><tr><th>Kode Transaksi</th><th>Masuk</th><th>Item</th><th style="text-align:right">Total</th></tr></thead>
+              <tbody>
+                <tr class="sel"><td class="mono">T-20260907-018</td><td>10:42</td><td>3</td><td class="mono" style="text-align:right">1.260.000</td></tr>
+                <tr><td class="mono">T-20260907-019</td><td>10:44</td><td>1</td><td class="mono" style="text-align:right">76.160</td></tr>
+                <tr><td class="mono">T-20260907-020</td><td>10:45</td><td>7</td><td class="mono" style="text-align:right">2.184.000</td></tr>
+                <tr><td class="mono">T-20260907-021</td><td>10:47</td><td>2</td><td class="mono" style="text-align:right">414.400</td></tr>
+              </tbody>
+            </table>
+            </div>
+            <p class="hint">Ketik kode dari tiket customer untuk lompat ke pesanannya.</p>
+          </div>
+          <div class="panel">
+            <h3>T-20260907-018</h3>
+            <p class="hint" style="margin-top:2px">a.n. Pak Budi · masuk 10:42</p>
+            <div class="row"><span><span class="q">2 LB</span> Acrylic 3mm Bening <span class="mono">·13001</span></span><span class="mono">370.000</span></div>
+            <div class="row"><span><span class="q">6 M</span> PVC Sheet Abu Muda <span class="mono">·25032</span></span><span class="mono">570.000</span></div>
+            <div class="row"><span><span class="q">1 SET</span> Door Closer Tanam <span class="mono">·26014</span></span><span class="mono">320.000</span></div>
+            <div class="sums">
+              <div class="grand"><span>Total</span><span>Rp 1.260.000</span></div>
+              <div><span>DPP</span><span>1.125.000</span></div>
+              <div><span>Termasuk PPN 12%</span><span>135.000</span></div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-paid">Tandai Lunas</button>
+              <button class="btn btn-ghost">Batalkan</button>
+            </div>
+            <p class="hint">Saat lunas: nomor antrian terbit, stok berkurang, struk + stub pickup cetak di printer kasir, slip cetak di printer gudang.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GUDANG ============ -->
+  <section data-s="gudang" hidden>
+    <div class="device">
+      <div class="device-bar">tv gudang · /gudang  <span class="live"><span class="ld"></span>Terhubung · auto-update</span><span class="pill">papan bersama</span></div>
+      <div class="device-body">
+        <div class="board">
+          <div class="col">
+            <h3>Perlu Disiapkan</h3>
+            <div class="job">
+              <div class="qn">04</div>
+              <div class="meta"><span class="badge b-stale">12 mnt sejak lunas</span></div>
+              <div class="items">7 item · <span class="mono">T-20260907-020</span></div>
+              <button class="btn btn-primary">Mulai Siapkan</button>
+            </div>
+            <div class="job">
+              <div class="qn">05</div>
+              <div class="meta"><span class="badge b-paid">2 mnt</span></div>
+              <div class="items">1 item · EDG 1X55MM Dark Blue · <span class="mono">T-…021</span></div>
+              <button class="btn btn-primary">Mulai Siapkan</button>
+            </div>
+          </div>
+          <div class="col">
+            <h3>Sedang Disiapkan</h3>
+            <div class="job p">
+              <div class="qn">03</div>
+              <div class="meta"><span class="badge b-packing">Disiapkan · 4 mnt</span></div>
+              <div class="items">3 item · centang di slip kertas <span class="mono">·13001 ·25032 ·26014</span></div>
+              <button class="btn btn-ready">Packing Selesai</button>
+            </div>
+            <div class="job warn">
+              <div class="qn">02</div>
+              <div class="meta"><span class="badge b-problem">Ada Kendala</span></div>
+              <div class="items">PVC Sheet 5013 sisa 4 M, diminta 6 M — menunggu kasir</div>
+              <button class="btn btn-ghost">Lihat Detail</button>
+            </div>
+          </div>
+          <div class="col">
+            <h3>Siap Diambil</h3>
+            <div class="job r">
+              <div class="qn">01</div>
+              <div class="meta"><span class="badge b-ready">Menunggu diambil</span></div>
+              <div class="items">4 item · sudah di konter pickup</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DISPLAY ============ -->
+  <section data-s="display" hidden>
+    <div class="device">
+      <div class="device-bar">tv area pickup · /display  <span class="live"><span class="ld"></span>Terhubung · auto-update</span><span class="pill">read-only</span></div>
+      <div class="device-body">
+        <div class="antrian">
+          <div class="side">
+            <h3>Sedang Diproses</h3>
+            <div class="nums">
+              <span class="n">02</span><span class="n">03</span><span class="n">04</span><span class="n">05</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="side ready">
+            <h3>Siap Diambil</h3>
+            <div class="nums">
+              <span class="n new">01</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADMIN ============ -->
+  <section data-s="admin" hidden>
+    <div class="device">
+      <div class="device-bar">desktop · /admin/import  <span class="pill">login admin</span></div>
+      <div class="device-body">
+        <div class="admin">
+          <div>
+            <div class="drop">
+              <div class="ic">XLSX</div>
+              <div>
+                <div class="t">item-list SA.xlsx — master item (Accurate)</div>
+                <div class="d">Item Code · Item Name · Item Category · Unit · Sales Price #1 · Suspended</div>
+              </div>
+              <button class="btn" style="margin-left:auto;align-self:center">Pilih File</button>
+            </div>
+            <div class="drop">
+              <div class="ic">XLSX</div>
+              <div>
+                <div class="t">laporan-stok SA.xlsx — penerimaan barang (Accurate)</div>
+                <div class="d">kode + qty diterima · menambah stok berjalan</div>
+              </div>
+              <button class="btn" style="margin-left:auto;align-self:center">Pilih File</button>
+            </div>
+            <div class="preview">
+              <div class="ph"><span>Pratinjau import master — 10 baris</span><span class="badge b-paid">8 siap · 2 catatan</span></div>
+              <table>
+                <tr><td class="mono">13001</td><td>ACRYLIC 3 MM BENING</td><td>Board · LB</td><td class="delta-pos">harga di-set 185.000</td></tr>
+                <tr><td class="mono">25032</td><td>D.LOCAL PVC SHEET ABU MUDA/5013</td><td>PVC Sheet · M</td><td class="delta-pos">harga di-set 95.000</td></tr>
+                <tr><td class="mono">29005</td><td>EDG 1X55MM, DARK BLUE/1007</td><td>HPL &amp; Edging · M</td><td class="delta-new">item baru</td></tr>
+                <tr><td class="mono">37308</td><td>F.ALMOND CEDAR/2805 SX2</td><td>HPL &amp; Edging · LB</td><td class="delta-warn">Brand DISCONTINUE → nonaktif</td></tr>
+                <tr><td class="mono">21000</td><td>C.DEMPUL SANPOLAC BESAR</td><td>Perlengkapan Rumah · GALON</td><td class="delta-warn">Sales Price 0 → perlu harga manual</td></tr>
+              </table>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-primary">Commit 8 Item</button>
+              <button class="btn btn-ghost">Batal</button>
+            </div>
+          </div>
+          <div class="hist">
+            <h3>Riwayat Batch</h3>
+            <div class="h">Master item · 8 baru, 24 harga diperbarui <span class="mono">7 Sep 08:14 · Ratna</span></div>
+            <div class="h">Stok masuk · 12 item, +340 unit <span class="mono">7 Sep 08:02 · Ratna</span></div>
+            <div class="h">Koreksi manual · PVC Sheet 5013 −2 M (rusak) <span class="mono">6 Sep 16:03 · Andi</span></div>
+            <div class="h">Master item · 3 harga diperbarui <span class="mono">6 Sep 09:20 · Ratna</span></div>
+            <p class="hint" style="margin-top:10px">Tiap batch bisa dibatalkan (reversal) bila salah upload.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LAPORAN ============ -->
+  <section data-s="laporan" hidden>
+    <div class="device">
+      <div class="device-bar">desktop · /admin/laporan  <span class="pill">login admin</span></div>
+      <div class="device-body">
+        <div class="rep-bar">
+          <div class="seg"><span>Hari ini</span><span class="on">Hari bisnis</span><span>7 hari</span><span>Bulan ini</span><span>Rentang…</span></div>
+          <span class="date">Hari bisnis: 7 Sep 2026 · 04:00 – sekarang · cabang SA</span>
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="k">Transaksi</div><div class="v">42</div><div class="d">2 dibatalkan</div></div>
+          <div class="kpi"><div class="k">Omzet terbayar</div><div class="v">18,4 jt</div><div class="d">DPP 16,4 jt · PPN 2,0 jt</div></div>
+          <div class="kpi"><div class="k">Item terjual</div><div class="v">318</div><div class="d">61 SKU</div></div>
+          <div class="kpi"><div class="k">Rata-rata siap</div><div class="v">11m</div><div class="d">bayar → ready</div></div>
+          <div class="kpi"><div class="k">Belum diambil</div><div class="v">3</div><div class="d">tertua 46 mnt</div></div>
+        </div>
+        <div class="rep-grid">
+          <div class="rep-card">
+            <h3>Penjualan per kategori</h3>
+            <table>
+              <thead><tr><th>Kategori</th><th class="num">Transaksi</th><th class="num">Qty</th><th class="num">Nilai</th></tr></thead>
+              <tbody>
+                <tr><td>HPL &amp; Edging</td><td class="num">19</td><td class="num">142</td><td class="num">5.240.000</td></tr>
+                <tr><td>PVC Sheet</td><td class="num">12</td><td class="num">88</td><td class="num">4.180.000</td></tr>
+                <tr><td>Hardware · Engsel</td><td class="num">14</td><td class="num">31</td><td class="num">3.610.000</td></tr>
+                <tr><td>Board</td><td class="num">8</td><td class="num">22</td><td class="num">2.960.000</td></tr>
+                <tr><td>Hardware Lainnya</td><td class="num">11</td><td class="num">28</td><td class="num">1.480.000</td></tr>
+                <tr><td>Perlengkapan Rumah</td><td class="num">6</td><td class="num">7</td><td class="num">930.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="rep-card">
+            <h3>Item terlaris (nilai)</h3>
+            <table>
+              <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Nilai</th></tr></thead>
+              <tbody>
+                <tr><td>PVC Sheet Abu Muda / 5013</td><td class="num">44 M</td><td class="num">4.180.000</td></tr>
+                <tr><td>Acrylic 3mm Bening</td><td class="num">14 LB</td><td class="num">2.590.000</td></tr>
+                <tr><td>Door Closer Tanam</td><td class="num">7 SET</td><td class="num">2.240.000</td></tr>
+                <tr><td>Kaca Pivot T96L Lurus</td><td class="num">18 PC</td><td class="num">1.224.000</td></tr>
+                <tr><td>EDG 1X55MM Dark Blue</td><td class="num">96 M</td><td class="num">816.000</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="rep-grid" style="margin-top:16px">
+          <div class="rep-card">
+            <h3>Transaksi per jam</h3>
+            <div class="hours">
+              <div class="hr"><div class="bar" style="height:22%"></div><div class="lbl">08</div></div>
+              <div class="hr"><div class="bar" style="height:40%"></div><div class="lbl">09</div></div>
+              <div class="hr"><div class="bar" style="height:68%"></div><div class="lbl">10</div></div>
+              <div class="hr"><div class="bar" style="height:85%"></div><div class="lbl">11</div></div>
+              <div class="hr"><div class="bar" style="height:55%"></div><div class="lbl">12</div></div>
+              <div class="hr"><div class="bar" style="height:38%"></div><div class="lbl">13</div></div>
+              <div class="hr"><div class="bar" style="height:60%"></div><div class="lbl">14</div></div>
+              <div class="hr"><div class="bar" style="height:100%"></div><div class="lbl">15</div></div>
+              <div class="hr"><div class="bar" style="height:72%"></div><div class="lbl">16</div></div>
+              <div class="hr"><div class="bar" style="height:30%"></div><div class="lbl">17</div></div>
+            </div>
+          </div>
+          <div class="rep-card">
+            <h3>Pergerakan stok hari ini</h3>
+            <table>
+              <thead><tr><th>Jenis</th><th class="num">Item</th><th class="num">Unit</th></tr></thead>
+              <tbody>
+                <tr><td>Terjual</td><td class="num">61</td><td class="num">−318</td></tr>
+                <tr><td>Penerimaan (import)</td><td class="num">12</td><td class="num">+340</td></tr>
+                <tr><td>Koreksi manual</td><td class="num">1</td><td class="num">−2</td></tr>
+                <tr><td>Stok menipis (≤ min)</td><td class="num">5</td><td class="num">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn btn-primary">Export CSV</button>
+          <button class="btn btn-ghost">Cetak</button>
+        </div>
+        <div class="rep-foot">Nilai pesanan berstatus terbayar menurut sistem — bukan rekonsiliasi kas. Entry akuntansi tetap di Accurate.</div>
+      </div>
+    </div>
   </section>
 </div>
-<script src="assets/qrcode.js"></script>
-<script src="assets/data.js"></script>
-<script src="assets/app.js"></script>
+
 <script>
-const C=cfg();
-document.getElementById('top').innerHTML=topbar({search:true,
-  bar:'MODE DEMO · data contoh'});
-
-/* denah */
-const planEl=document.getElementById('plan'),listEl=document.getElementById('planList');
-renderPlan(planEl,listEl,'ALL');
-zonebar(document.getElementById('zonebar'),z=>{renderPlan(planEl,listEl,z);
-  toast(z==='ALL'?'Menampilkan seluruh lantai.':'Zona '+z+' — '+ZONES[z])});
-document.querySelectorAll('.viewtog button').forEach(b=>b.onclick=()=>{
-  const L=b.dataset.pv==='list';
-  document.querySelectorAll('.viewtog button').forEach(x=>x.classList.toggle('on',x===b));
-  document.getElementById('plan').style.display=L?'none':'block';
-  document.getElementById('planList').style.display=L?'flex':'none'});
-document.querySelector('.viewtog button[data-pv="plan"]').click();
-
-/* detail + daftar */
-const detail=document.getElementById('detail'),results=document.getElementById('results'),listlbl=document.getElementById('listlbl');
-function showDetail(code){
-  const u=unit(code);if(!u)return;
-  selectUnit(code);
-  if(!isLive(u)){detail.innerHTML=`<div class="card-lbl">UNIT ${u.u}</div><h2 class="detail-name">Unit ini belum terisi</h2>
-    <div class="chips"><span class="chip">${u.sis==='renovasi'?'Sedang direnovasi':'Tersedia untuk disewa'}</span></div>
-    <p class="empty-note">Tertarik membuka usaha di sini? Hubungi tim leasing di 021-5500-3300.</p>`;return}
-  const promoOn=C.fPromo&&u.promo;
-  detail.innerHTML=`<div class="card-lbl">UNIT ${u.u}</div><h2 class="detail-name">${esc(u.n)}</h2>
-    <div class="chips"><span class="chip">${esc(u.kat)}</span><span class="chip open">Buka sekarang</span>
-    ${u.tier==='sorotan'?'<span class="chip hot">Sorotan</span>':''}</div>
-    ${promoOn?`<div class="promo-line">🏷️ ${esc(u.promo)}${u.until?`<small>BERLAKU SAMPAI ${u.until}</small>`:''}</div>`:''}
-    ${C.fArah?`<div class="arah"><b>CARA KE SINI</b>${arah(u)}</div>`:''}
-    <dl class="kv"><dt>Lokasi</dt><dd>Lantai 3, unit <span class="mono">${u.u}</span></dd><dt>Jam buka</dt><dd>${u.jam}</dd>
-    <dt>WhatsApp</dt><dd>${u.wa}</dd><dt>Di mall sejak</dt><dd>${u.sejak}</dd></dl>
-    <button class="btn alt" data-hl="${u.u}">Sorot di denah</button>`;
-}
-function renderList(f){
-  f=(f||'').trim().toLowerCase();
-  const all=units().filter(u=>isLive(u)&&(!f||u.n.toLowerCase().indexOf(f)>-1||u.kat.toLowerCase().indexOf(f)>-1||
-      u.u.toLowerCase().indexOf(f)>-1||(u.kws||[]).some(k=>k[0].indexOf(f)>-1)))
-    .sort((a,b)=>RANK[a.tier]-RANK[b.tier]||b.views-a.views);
-  const it=all.slice(0,f?60:40);
-  listlbl.textContent=f?`${all.length} HASIL UNTUK “${f.toUpperCase()}”${all.length>it.length?' · 60 TERATAS':''}`
-    :`${all.length} TOKO DI LANTAI INI · ${it.length} TERPOPULER`;
-  if(!it.length){results.innerHTML=`<p class="empty-note">Belum ada toko yang cocok di lantai ini. Kalau Anda melihat tokonya ada di lapangan, klaim kupon lewat tab “Kasirnya tidak ada QR?” di bawah.</p>`;logZero(f);return}
-  results.innerHTML=it.map(u=>`<button class="res" data-u="${u.u}"><span class="rc">${u.u}</span>
-    <span><span class="rn">${esc(u.n)}</span>${u.tier==='sorotan'?'<span class="sor">SOROTAN</span>':''}<br>
-    <span class="rk">${esc(u.kat)} · ${u.jam}</span>${C.fPromo&&u.promo?`<br><span class="rp">🏷️ ${esc(u.promo)}</span>`:''}</span></button>`).join('');
-}
-let zt;function logZero(f){if(!C.fLogNihil||f.length<3)return;clearTimeout(zt);
-  zt=setTimeout(()=>{const z=zeroLog(),x=z.find(a=>a.q===f);
-    if(x){x.n++;x.fresh=true}else z.push({q:f,n:1,fresh:true});saveZero(z)},700)}
-document.addEventListener('click',e=>{
-  const hl=e.target.closest('[data-hl]');if(hl){flashUnit(hl.dataset.hl);toast('Unit '+hl.dataset.hl+' disorot di denah.');return}
-  const t=e.target.closest('[data-u]');if(t)showDetail(t.dataset.u)});
-document.getElementById('q').addEventListener('input',e=>renderList(e.target.value));
-
-/* kupon */
-const R=document.getElementById('reward');
-if(!C.fKupon){R.style.display='none'}else{
-  const sisa=Math.max(0,C.kuponKuotaHari-C.kuponTerpakai);
-  R.innerHTML=`<div class="reward-hero"><b>${rp(C.kuponNilai)}</b><span>kupon belanja, setiap transaksi</span></div>
-  <p>Berlaku di seluruh tenant ${esc(C.namaMall)}. Tidak perlu memasang aplikasi.
-  Menemukan toko yang belum terdaftar? Hadiahnya ${rp(C.hadiahLaporan)}.</p>
-  <div class="quota" id="quota">KUOTA HARI INI: ${sisa} DARI ${C.kuponKuotaHari} · MAKS ${C.kuponPerNomor} PER NOMOR PER HARI</div>
-  <div class="tabs"><button class="tab on" data-t="scan">SCAN QR DI KASIR</button><button class="tab" data-t="noqr">KASIRNYA TIDAK ADA QR?</button></div>
-  <div id="tabScan">
-    <div class="scanner"><div class="frame">⛶</div><p>ARAHKAN KE QR DI MEJA KASIR</p></div>
-    <div id="scanOut"></div><button class="btn" id="doScan">Pindai QR</button>
-  </div>
-  <div id="tabNoqr" style="display:none">
-    <p style="margin-bottom:11px">Toko yang belum terdaftar berhak atas hadiah lebih besar, ${rp(C.hadiahLaporan)}, dibayarkan setelah kami verifikasi. Cukup sebutkan nomor kiosnya.</p>
-    <div class="field"><label for="nq_n">Nama toko</label><input id="nq_n" type="text" placeholder="Contoh: Kedai Kopi Tuku Senja"></div>
-    <div class="field"><label for="nq_u">Nomor kios</label><input id="nq_u" type="text" placeholder="Contoh: L3-03"></div>
-    <label style="display:block;font-size:11px;font-family:var(--mono);letter-spacing:.07em;margin-bottom:6px;color:#4A3B08">PILIH SATU BUKTI</label>
-    <div class="proof"><button data-p="struk" class="on">📄 Foto struk<br><small>Kalau tokonya memberi struk</small></button>
-    <button data-p="papan">🪧 Foto papan nama<br><small>Kalau tidak ada struk</small></button></div>
-    <button class="btn" id="sendNoqr">Klaim hadiah ${rp(C.hadiahLaporan)}</button>
-    <p class="privacy">Foto dan nomor kios dipakai hanya untuk memverifikasi kupon dan melengkapi direktori. Lokasi persis Anda tidak direkam.</p>
-  </div>`;
-  document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
-    document.getElementById('tabScan').style.display=b.dataset.t==='scan'?'':'none';
-    document.getElementById('tabNoqr').style.display=b.dataset.t==='noqr'?'':'none'});
-  document.querySelectorAll('.proof button').forEach(b=>b.onclick=()=>
-    document.querySelectorAll('.proof button').forEach(x=>x.classList.toggle('on',x===b)));
-  function pakaiKuota(){const c=cfg();if(c.kuponTerpakai>=c.kuponKuotaHari){toast('Kuota kupon hari ini sudah habis. Coba lagi besok.');return false}
-    setCfg({kuponTerpakai:c.kuponTerpakai+1});
-    const s=Math.max(0,c.kuponKuotaHari-c.kuponTerpakai-1);
-    document.getElementById('quota').textContent=`KUOTA HARI INI: ${s} DARI ${c.kuponKuotaHari} · MAKS ${c.kuponPerNomor} PER NOMOR PER HARI`;
-    return true}
-  let si=0;
-  document.getElementById('doScan').onclick=()=>{
-    const list=units().filter(u=>isLive(u)&&u.qr==='aktif');
-    if(!list.length){toast('Belum ada QR toko yang aktif di lantai ini.');return}
-    const u=list[si++%list.length];if(!pakaiKuota())return;
-    patchUnit(u.u,x=>x.scan++);
-    document.getElementById('scanOut').innerHTML=`<div class="scanres"><b>QR TERBACA</b>
-      <strong>${u.u} · ${esc(u.n)}</strong><br>Kupon ${rp(C.kuponNilai)} sudah masuk ke nomor WhatsApp Anda.</div>`;
-    toast('Kupon masuk. Toko ditentukan oleh QR-nya, bukan dipilih pembeli.')};
-  document.getElementById('sendNoqr').onclick=()=>{
-    const n=document.getElementById('nq_n').value.trim(),ux=document.getElementById('nq_u').value.trim();
-    if(!n||!ux){toast('Isi nama toko dan nomor kiosnya dulu, ya.');return}
-    if(!pakaiKuota())return;
-    addReport({nama:n,unit:ux.toUpperCase(),bukti:document.querySelector('.proof button.on').dataset.p});
-    toast('Terima kasih. Hadiah dikirim setelah petugas kami verifikasi tokonya.');
-    document.getElementById('nq_n').value='';document.getElementById('nq_u').value=''};
-}
-showDetail('L3-13');renderList('');
+  const tabs = [...document.querySelectorAll('nav.screens button')];
+  const secs = [...document.querySelectorAll('section[data-s]')];
+  function show(name) {
+    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.t === name)));
+    secs.forEach(s => { s.hidden = s.dataset.s !== name; });
+  }
+  tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.t)));
 </script>
 </body>
 </html>
